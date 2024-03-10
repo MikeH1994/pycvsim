@@ -1,5 +1,6 @@
 from typing import List
 import cv2
+import time
 import numpy as np
 import open3d as o3d
 from direct.showbase.ShowBase import ShowBase
@@ -12,14 +13,18 @@ from .scenecamera import SceneCamera
 
 
 class SceneRenderer(ShowBase):
-    def __init__(self, cameras: List[SceneCamera] = None, multiple_samples=32, antialiasing=AntialiasAttrib.MAuto):
+    def __init__(self, cameras: List[SceneCamera] = None, objects: List[SceneObject] = None,
+                 multiple_samples=32, antialiasing=AntialiasAttrib.MAuto):
         # loadPrcFileData("", "win-size {} {}".format(xres, yres))
         super().__init__(windowType='offscreen')
+        cameras = cameras if cameras is not None else []
         self.objects: List[SceneObject] = []
         self.node_path: NodePath = NodePath()
-        self.cameras: List[SceneCamera] = cameras if cameras is not None else []
         self.multiple_samples = multiple_samples
         self.antialiasiang = antialiasing
+        self.cameras: List[SceneCamera] = []
+        for camera in cameras:
+            self.add_camera(camera)
 
     def add_camera(self, camera: SceneCamera):
         self.cameras.append(camera)
@@ -60,7 +65,6 @@ class SceneRenderer(ShowBase):
     def render_image(self, camera_index):
         if camera_index >= len(self.cameras):
             raise Exception("Camera index {} is out of bounds".format(camera_index))
-
         camera = self.cameras[camera_index]
         self.set_camera_fov(camera.hfov)
         self.set_camera_position(camera.pos)
@@ -78,16 +82,17 @@ class SceneRenderer(ShowBase):
         disp_region.setCamera(self.cam)
         bgr_tex = Texture()
         window.addRenderTexture(bgr_tex, GraphicsOutput.RTMCopyRam, GraphicsOutput.RTPColor)
+        window.set_clear_color(LVecBase4f(0.2, 0.2, 0.2, 1.0))
 
         for obj in self.objects:
             obj.node_path.setAntialias(self.antialiasiang)
 
-        window.set_clear_color(LVecBase4f(0.2, 0.2, 0.2, 1.0))
         self.graphicsEngine.renderFrame()
-
         bgr_img = np.frombuffer(bgr_tex.getRamImage(), dtype=np.uint8)
         bgr_img.shape = (bgr_tex.getYSize(), bgr_tex.getXSize(), bgr_tex.getNumComponents())
         bgr_img = bgr_img[:, ::-1, :3]
+
+        self.graphicsEngine.removeWindow(self.graphicsEngine.windows[1])
         return bgr_img
 
     def render_image_from_each_camera(self):

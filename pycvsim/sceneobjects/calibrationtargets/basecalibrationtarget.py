@@ -5,8 +5,8 @@ from .utils import transform_object_points
 
 
 class BaseCalibrationTarget(SceneObject):
-    def __init__(self, mesh: o3d.geometry.TriangleMesh, object_points: NDArray):
-        super().__init__(mesh)
+    def __init__(self, mesh: o3d.geometry.TriangleMesh, object_points: NDArray, name=""):
+        super().__init__(mesh, name)
         self.object_points = object_points
 
     def object_points(self):

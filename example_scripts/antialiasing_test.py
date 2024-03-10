@@ -5,6 +5,7 @@ from pycvsim.rendering.scenerenderer import SceneRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
 import matplotlib.pyplot as plt
 import panda3d.core
+import time
 
 mesh, object_points = CheckerbordTarget.create_target((7, 6), (0.05, 0.05), board_thickness=0.02,
                                                       color_bkg=(128, 0, 0), board_boundary=0.05)
@@ -64,3 +65,14 @@ ax[1][0].set_title("16")
 ax[1][1].imshow(images[3])
 ax[1][1].set_title("128")
 plt.show()
+
+for multisamples in [0, 8, 16, 32, 64]:
+    renderer.multiple_samples = multisamples
+    renderer.antialiasiang = panda3d.core.AntialiasAttrib.MAuto
+    start = time.time()
+    for i in range(100):
+        renderer.render_image(0)
+    end = time.time()
+    t = (end - start) / 100.0
+    fps = 1.0 / t
+    print("{} samples- average t = {:.3f}s, {:.3f} fps".format(multisamples, t, fps))

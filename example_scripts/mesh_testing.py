@@ -21,9 +21,14 @@ renderer.add_object(obj_mesh)
 
 
 while True:
+    print(renderer.graphicsEngine.windows)
+    print(type(renderer.graphicsEngine.windows))
+    print(renderer.graphicsEngine.windows[0])
+    print(type(renderer.graphicsEngine.windows[0]))
     img = renderer.render_image(0)
     img_2 = renderer.raycast_scene(0)["object_ids"]
     plt.imshow(img)
     plt.figure()
     plt.imshow(img_2)
     plt.show()
+    renderer.graphicsEngine.removeWindow(renderer.graphicsEngine.windows[1])

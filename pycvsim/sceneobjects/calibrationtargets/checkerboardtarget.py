@@ -7,10 +7,9 @@ from .utils import create_box
 
 
 class CheckerbordTarget(BaseCalibrationTarget):
-    def __init__(self, board_size, board_width):
-        tensor_mesh, calibration_object_points = CheckerbordTarget.create_target(board_size, board_width)
-        super().__init__(tensor_mesh, calibration_object_points)
-        pass
+    def __init__(self, board_size, board_width, board_thickness, name=""):
+        tensor_mesh, calibration_object_points = CheckerbordTarget.create_target(board_size, board_width, board_thickness)
+        super().__init__(tensor_mesh, calibration_object_points, name)
 
     @staticmethod
     def create_target(board_size: Tuple[int, int], grid_size: Tuple[float, float], board_thickness: float,
@@ -33,12 +32,10 @@ class CheckerbordTarget(BaseCalibrationTarget):
             for j in range(board_height+1):
                 color = color_1 if (i + j) % 2 == 0 else color_2
                 mesh += create_box(object_points[j, i], grid_width, grid_height, board_thickness, color)
-
         object_points = object_points[1:-1, 1:-1].reshape(-1, 3)
 
         centre = np.mean(object_points, axis=0)
         object_points -= centre
-
         mesh = mesh.translate(-centre)
 
         return mesh, object_points

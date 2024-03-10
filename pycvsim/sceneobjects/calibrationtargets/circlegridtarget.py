@@ -3,7 +3,6 @@ import open3d as o3d
 import numpy as np
 from numpy.typing import NDArray
 from typing import Tuple
-from pycvsim.sceneobjects.utils import create_cylinder
 
 
 class CircleGridTarget(BaseCalibrationTarget):
