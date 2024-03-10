@@ -1,17 +1,15 @@
-from pycvsim.scene_objects.basecalibrationtarget import BaseCalibrationTarget
+from pycvsim.sceneobjects.calibrationtargets.basecalibrationtarget import BaseCalibrationTarget
 import open3d as o3d
 import numpy as np
 from numpy.typing import NDArray
 from typing import Tuple
 from .utils import create_box
-import math
-import matplotlib.pyplot as plt
 
 
 class CheckerbordTarget(BaseCalibrationTarget):
     def __init__(self, board_size, board_width):
-        #tensor_mesh, calibration_object_points = CheckerbordTarget.create_target(board_size, width)
-        #super().__init__(tensor_mesh, calibration_object_points)
+        tensor_mesh, calibration_object_points = CheckerbordTarget.create_target(board_size, board_width)
+        super().__init__(tensor_mesh, calibration_object_points)
         pass
 
     @staticmethod

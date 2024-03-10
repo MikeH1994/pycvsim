@@ -1,11 +1,9 @@
-from .basecalibrationtarget import BaseCalibrationTarget
+from pycvsim.sceneobjects.calibrationtargets.basecalibrationtarget import BaseCalibrationTarget
 import open3d as o3d
 import numpy as np
 from numpy.typing import NDArray
 from typing import Tuple
-from .utils import create_box, create_cylinder
-import math
-import matplotlib.pyplot as plt
+from pycvsim.sceneobjects.utils import create_cylinder
 
 
 class CircleGridTarget(BaseCalibrationTarget):
