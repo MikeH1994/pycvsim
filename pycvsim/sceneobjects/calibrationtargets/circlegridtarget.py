@@ -1,11 +1,11 @@
-from pycvsim.sceneobjects.calibrationtargets.basecalibrationtarget import BaseCalibrationTarget
+from pycvsim.sceneobjects.calibrationtargets.calibrationtarget import CalibrationTarget
 import open3d as o3d
 import numpy as np
 from numpy.typing import NDArray
 from typing import Tuple
 
 
-class CircleGridTarget(BaseCalibrationTarget):
+class CircleGridTarget(CalibrationTarget):
     def __init__(self, board_size, board_width):
         mesh, calibration_object_points = CircleGridTarget.create_target(board_size, width)
         super().__init__(mesh, calibration_object_points)

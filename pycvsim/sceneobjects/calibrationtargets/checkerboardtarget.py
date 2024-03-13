@@ -1,4 +1,4 @@
-from pycvsim.sceneobjects.calibrationtargets.basecalibrationtarget import BaseCalibrationTarget
+from pycvsim.sceneobjects.calibrationtargets.calibrationtarget import CalibrationTarget
 import open3d as o3d
 import numpy as np
 from numpy.typing import NDArray
@@ -6,7 +6,7 @@ from typing import Tuple
 from .utils import create_box
 
 
-class CheckerbordTarget(BaseCalibrationTarget):
+class CheckerbordTarget(CalibrationTarget):
     def __init__(self, board_size, board_width, board_thickness, name=""):
         tensor_mesh, calibration_object_points = CheckerbordTarget.create_target(board_size, board_width, board_thickness)
         super().__init__(tensor_mesh, calibration_object_points, name)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple
+from typing import Tuple, Dict
 import numpy as np
 from numpy.typing import NDArray
 import math
@@ -40,7 +40,19 @@ class SceneCamera:
         self.vfov: float = cvmaths.hfov_to_vfov(hfov, self.xres, self.yres)
         self.r: NDArray = r
         self.name = name
+        self.saved_state = {}
+        self.save_state()
         SceneCamera.n_cameras += 1
+
+    def reset_state(self):
+        self.pos = self.saved_state["pos"]
+        self.r = self.saved_state["r"]
+
+    def save_state(self):
+        self.saved_state = {
+            "pos": np.copy(self.pos),
+            "r": np.copy(self.r)
+        }
 
     def axes(self) -> Tuple[NDArray, NDArray, NDArray]:
         """
@@ -169,7 +181,7 @@ class SceneCamera:
 
     @staticmethod
     def create_camera_from_lookpos(pos: NDArray, lookpos: NDArray, up: NDArray,
-                                   res: Tuple[int, int], hfov: float) -> SceneCamera:
+                                   res: Tuple[int, int], hfov: float, name="") -> SceneCamera:
         """
         Creates a camera from a lookpos, as opposed to a 3x3 rotation matrix.
 
@@ -187,11 +199,11 @@ class SceneCamera:
         :rtype: SceneCamera
         """
         r = cvmaths.lookpos_to_rotation_matrix(pos, lookpos, up)
-        return SceneCamera(pos, r, res, hfov)
+        return SceneCamera(pos, r, res, hfov, name=name)
 
     @staticmethod
     def create_camera_from_euler_angles(pos: NDArray, euler_angles: NDArray,
-                                        res: Tuple[int, int], hfov: float) -> SceneCamera:
+                                        res: Tuple[int, int], hfov: float, name="") -> SceneCamera:
         """
         Creates a camera from a lookpos, as opposed to a 3x3 rotation matrix.
 
@@ -207,4 +219,4 @@ class SceneCamera:
         :rtype: SceneCamera
         """
         r = cvmaths.euler_angles_to_rotation_matrix(euler_angles)
-        return SceneCamera(pos, r, res, hfov)
+        return SceneCamera(pos, r, res, hfov, name=name)
