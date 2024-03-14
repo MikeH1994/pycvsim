@@ -1,4 +1,4 @@
-from pycvsim.sceneobjects.calibrationtargets import CalibrationTarget
+0from pycvsim.sceneobjects.calibrationtargets import CalibrationTarget
 import numbers
 
 class CalibrationManager:
@@ -15,8 +15,6 @@ class CalibrationManager:
         if "max_rotation" in kwargs:
             assert(isinstance(self.max_rotation, numbers.Number))
             self.camera_mode = kwargs["max_rotation"]
-
-
 
     def run(self):
         if self.camera_mode == "fixed":
