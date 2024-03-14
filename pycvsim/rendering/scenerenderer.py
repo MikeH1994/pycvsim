@@ -25,6 +25,8 @@ class SceneRenderer(ShowBase):
         self.cameras: List[SceneCamera] = []
         for camera in cameras:
             self.add_camera(camera)
+        for obj in objects:
+            self.add_object(obj)
 
     def add_camera(self, camera: SceneCamera):
         self.cameras.append(camera)
