@@ -7,14 +7,39 @@ from .utils import create_box
 
 
 class CheckerbordTarget(CalibrationTarget):
-    def __init__(self, board_size, board_width, board_thickness, name=""):
-        tensor_mesh, calibration_object_points = CheckerbordTarget.create_target(board_size, board_width, board_thickness)
-        super().__init__(tensor_mesh, calibration_object_points, name)
+    def __init__(self, board_size: Tuple[int, int], grid_size: Tuple[float, float], board_thickness, name="", **kwargs):
+        tensor_mesh, obj_points = CheckerbordTarget.create_target(board_size, grid_size, board_thickness, **kwargs)
+
+        board_width, board_height = board_size
+        grid_width, grid_height = grid_size
+        min_x, min_y, _ = np.min(obj_points, axis=0)
+        max_x, max_y, _ = np.max(obj_points, axis=0)
+        obj_boundary = np.array([
+            np.array([min_x - grid_width, min_y - grid_height, 0.0]),
+            np.array([max_x + grid_width, min_y - grid_height, 0.0]),
+            np.array([min_x - grid_width, max_x + grid_height, 0.0]),
+            np.array([max_x + grid_width, max_x + grid_height, 0.0])
+        ])
+        super().__init__(tensor_mesh, obj_points, obj_boundary, name)
 
     @staticmethod
     def create_target(board_size: Tuple[int, int], grid_size: Tuple[float, float], board_thickness: float,
-                      color_1=(255, 255, 255), color_2=(0, 0, 0), color_bkg=(255, 255, 255),
-                      board_boundary=0.0) -> Tuple[o3d.t.geometry.TriangleMesh, NDArray]:
+                      **kwargs) -> Tuple[o3d.t.geometry.TriangleMesh, NDArray]:
+        color_1 = (255, 255, 255)
+        color_2 = (0, 0, 0)
+        color_bkg = (255, 255, 255)
+        board_boundary = 0.0
+        for param in kwargs:
+            if param == "color_1":
+                color_1 = kwargs[param]
+            elif param == "color_2":
+                color_2 = kwargs[param]
+            elif param == "color_bkg":
+                color_bkg = kwargs[param]
+            elif param == "board_boundary":
+                board_boundary = kwargs[param]
+            else:
+                raise Exception("Unkown parameter {}".format(param))
         color_1 = np.array(color_1)/255.0
         color_2 = np.array(color_2)/255.0
         color_bkg = np.array(color_bkg)/255.0
@@ -45,9 +70,9 @@ class CheckerbordTarget(CalibrationTarget):
         if board_boundary > 0.0:
             k = board_boundary
             bl = object_points[0, 0] + np.array([-dx, -dy, 0.0])
-            br = object_points[0, board_width - 1] + np.array([dx, -dy, 0.0])
+            br = object_points[0, grid_size - 1] + np.array([dx, -dy, 0.0])
             tl = object_points[board_height - 1, 0] + np.array([-dx, dy, 0.0])
-            tr = object_points[board_height - 1, board_width - 1] + np.array([dx, dy, 0.0])
+            tr = object_points[board_height - 1, grid_size - 1] + np.array([dx, dy, 0.0])
             color = color_bkg
 
             # create boundary on top

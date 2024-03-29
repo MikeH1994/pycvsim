@@ -145,38 +145,11 @@ def rotation_matrix_to_lookpos(pos: NDArray, r: NDArray):
     lookpos = pos + look_dir
     return lookpos
 
-"""def euler_angles_to_rotation_matrix(euler_angles):
-    alpha, beta, gamma = euler_angles
-    r_x = np.array([[1, 0, 0],
-                    [0, np.cos(alpha), -np.sin(alpha)],
-                    [0, np.sin(alpha), np.cos(alpha)]
-                    ])
+def panda3d_angles_to_xyz(euler_angles):
+    rotation_matrix = Rotation.from_euler('zxy', euler_angles, degrees=True)
+    return rotation_matrix.as_euler('xyz', degrees=True)
 
-    r_y = np.array([[np.cos(beta), 0, np.sin(beta)],
-                    [0, 1, 0],
-                    [-np.sin(beta), 0, np.cos(beta)]
-                    ])
+def xyz_angles_to_panda3d(euler_angles):
+    rotation_matrix = Rotation.from_euler('zxy', euler_angles, degrees=True)
+    return rotation_matrix.as_euler('zyx', degrees=True)
 
-    r_z = np.array([[np.cos(gamma), -np.sin(gamma), 0],
-                    [np.sin(gamma), np.cos(gamma), 0],
-                    [0, 0, 1]
-                    ])
-    r = np.matmul(r_z, np.matmul(r_y, r_x))
-    return r
-"""
-
-"""
-def rotation_matrix_to_euler_angles(r: NDArray) -> NDArray:
-    sy = math.sqrt(r[0, 0] * r[0, 0] + r[1, 0] * r[1, 0])
-    singular = sy < 1e-6
-
-    if not singular:
-        x = math.atan2(r[2, 1], r[2, 2])
-        y = math.atan2(-r[2, 0], sy)
-        z = math.atan2(r[1, 0], r[0, 0])
-    else:
-        x = math.atan2(-r[1, 2], r[1, 1])
-        y = math.atan2(-r[2, 0], sy)
-        z = 0
-    return np.array([x, y, z])
-"""

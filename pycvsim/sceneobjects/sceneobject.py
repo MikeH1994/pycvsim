@@ -1,12 +1,13 @@
 from __future__ import annotations
 import copy
+import numpy as np
 import open3d as o3d
 import panda3d
-from panda3d.core import WindowProperties, NodePath, LVecBase3f, AntialiasAttrib
 from numpy.typing import NDArray
-import numpy as np
+from panda3d.core import WindowProperties, NodePath, AntialiasAttrib
 import pycvsim.sceneobjects.utils as pycvsim_utils
-
+import pycvsim.core
+from scipy.spatial.transform import Rotation
 
 class SceneObject:
     node_path: panda3d.core.NodePath = None
@@ -29,17 +30,17 @@ class SceneObject:
     def set_pos(self, pos: NDArray):
         self.node_path.setPos(*pos)
 
-    def set_euler_angles(self, angles: NDArray):
-        alpha, beta, gamma = angles
-        self.node_path.set_hpr(beta, gamma, alpha)
-
     def get_pos(self):
         return self.node_path.get_pos()
 
+    def set_euler_angles(self, angles: NDArray):
+        alpha, beta, gamma = pycvsim.core.xyz_angles_to_panda3d(angles)
+        self.node_path.set_hpr(alpha, beta, gamma)
+
     def get_euler_angles(self):
+        # get angles in yxz format
         angles = self.node_path.get_hpr()
-        np.array([angles[1], angles[2], angles[0]])
-        return angles
+        return pycvsim.core.panda3d_angles_to_xyz(angles)
 
     def mesh(self) -> o3d.geometry.TriangleMesh:
         mesh = copy.deepcopy(self.original_mesh)

@@ -102,13 +102,16 @@ class GUI:
         self.add_object(default_obj)
 
         # create default cameras
-        camera = SceneCamera(res=(720, 720), name="Default camera 1")
+        distortion_coeffs = np.array([-0.8424, 0.1724, -0.00101, -0.006596, 4.3341])
+        camera = SceneCamera(res=(720, 720), name="Default camera 1", distortion_coeffs=distortion_coeffs, safe_zone=100)
         self.add_camera(camera)
         camera = SceneCamera.create_camera_from_lookpos(np.array([0.5, 0.0, 0.0]),
                                                         np.array([0.0, 0.0, 2.0]),
                                                         np.array([0.0, 1.0, 0.0]),
-                                                        res=(720, 720), hfov=40.0,
-                                                        name="Default camera 2")
+                                                        res=(720, 720), hfov=15.0,
+                                                        name="Default camera 2",
+                                                        distortion_coeffs=distortion_coeffs,
+                                                        safe_zone=100)
         self.add_camera(camera)
         self.render()
         self.camera_selected_scrollbar.configure(to=len(self.renderer.cameras)-1)

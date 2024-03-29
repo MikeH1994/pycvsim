@@ -6,16 +6,26 @@ from scipy.optimize import minimize
 
 
 class DistortionModel:
-    def __init__(self, camera_matrix: NDArray, distortion_coeffs: NDArray, image_size: Tuple[int, int]):
+    def __init__(self, camera_matrix: NDArray, distortion_coeffs: NDArray, image_size: Tuple[int, int],
+                 safe_zone: int = 0):
         assert(distortion_coeffs.shape == (5,))
         self.width, self.height = image_size
         self.camera_matrix = camera_matrix
         self.distortion_coeffs = distortion_coeffs
-        self.undistort_map_x, self.undistort_map_y = self.create_map(camera_matrix, distortion_coeffs, image_size)
-        # cv2.initUndistortRectifyMap(camera_matrix, distortion_coeffs, None, None, image_size, cv2.CV_32FC1)
+        self.undistort_map_x, self.undistort_map_y = None, None
+        self.distort_map_x, self.distort_map_y = None, None
+        self.initialise(safe_zone=safe_zone)
+
+    def initialise(self, safe_zone=0):
+        image_size = (self.width + 2*safe_zone, self.height + 2*safe_zone)
+        camera_matrix = np.copy(self.camera_matrix)
+        camera_matrix[0][2] += safe_zone
+        camera_matrix[1][2] += safe_zone
+        distortion_coeffs = self.distortion_coeffs
+        self.undistort_map_x, self.undistort_map_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coeffs, None,
+                                                                                 None, image_size, cv2.CV_32FC1)
+        # self.create_map(camera_matrix, distortion_coeffs, image_size)
         self.distort_map_x, self.distort_map_y = self.invert_maps(self.undistort_map_x, self.undistort_map_y)
-        #self.inverse_distortion_coeffs = self.compute_inverse_distortion_coeffs(camera_matrix, distortion_coeffs, image_size)
-        #self.distort_map_x, self.distort_map_y = self.create_map(camera_matrix, self.inverse_distortion_coeffs, image_size)
 
     def distort_image(self, image: NDArray):
         """
@@ -23,6 +33,7 @@ class DistortionModel:
         :param image:
         :return:
         """
+        assert(image.shape[:2] == self.distort_map_x.shape)
         return cv2.remap(image, self.distort_map_x, self.distort_map_y, cv2.INTER_LINEAR)
 
     def undistort_image(self, image: NDArray):
@@ -31,8 +42,8 @@ class DistortionModel:
         :param image:
         :return:
         """
+        assert(image.shape[:2] == self.undistort_map_x.shape)
         return cv2.remap(image, self.undistort_map_x, self.undistort_map_y, cv2.INTER_LINEAR)
-        # return cv2.undistort(image, self.camera_matrix, self.distortion_coeffs, None, None)
 
     def compute_inverse_distortion_coeffs(self, camera_matrix, distortion_coeffs, image_size):
         """

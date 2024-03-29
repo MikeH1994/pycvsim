@@ -82,7 +82,7 @@ def crop_image(img: NDArray, dst_size: Tuple[int, int]):
 def resize_image(img: NDArray, dst_size: Tuple[int, int],
                  exact_interpolation: bool = False, mode: str = 'pad'):
     """
-    Resize an image to the given size, maintaining aspect ration by either cropping or padding the image based
+    Resize an image_safe_zone to the given size, maintaining aspect ration by either cropping or padding the image_safe_zone based
     on the supplied arguments
     :param img:
     :param dst_size:
@@ -100,21 +100,21 @@ def resize_image(img: NDArray, dst_size: Tuple[int, int],
     interp_mode = cv2.INTER_NEAREST if exact_interpolation else cv2.INTER_CUBIC
 
     if mode == 'pad':
-        if k_x < k_y:  # if the image needs to be resized more in the y direction
-            # scale image so that width = dst_width and height < dst_height: then pad in y direction
+        if k_x < k_y:  # if the image_safe_zone needs to be resized more in the y direction
+            # scale image_safe_zone so that width = dst_width and height < dst_height: then pad in y direction
             intermediate_size = (int(src_width * k_x), int(src_height * k_x))
-        else:  # if the image needs to be resized more in the x direction
-            # scale image so that height = dst_height and width < dst_width: then pad in x direction
+        else:  # if the image_safe_zone needs to be resized more in the x direction
+            # scale image_safe_zone so that height = dst_height and width < dst_width: then pad in x direction
             intermediate_size = (int(src_width * k_y), int(src_height * k_y))
         img = cv2.resize(img, intermediate_size, interpolation=interp_mode)
         img = pad_image(img, dst_size)
         return img
     elif mode == 'crop':
-        if k_x < k_y:  # if the image needs to be resized more in the y direction
-            # scale image so that height = dst_height and width > dst_width: then crop in x direction
+        if k_x < k_y:  # if the image_safe_zone needs to be resized more in the y direction
+            # scale image_safe_zone so that height = dst_height and width > dst_width: then crop in x direction
             intermediate_size = (int(src_width * k_y), int(src_height * k_y))
-        else:  # if the image needs to be resized more in the x direction
-            # scale image so that width = dst_width and height > dst_height: then crop in y direction
+        else:  # if the image_safe_zone needs to be resized more in the x direction
+            # scale image_safe_zone so that width = dst_width and height > dst_height: then crop in y direction
             intermediate_size = (int(src_width * k_x), int(src_height * k_x))
         img = cv2.resize(img, intermediate_size, interpolation=interp_mode)
         img = crop_image(img, dst_size)

@@ -1,5 +1,6 @@
-0from pycvsim.sceneobjects.calibrationtargets import CalibrationTarget
+from pycvsim.sceneobjects.calibrationtargets import CalibrationTarget
 import numbers
+
 
 class CalibrationManager:
     def __init__(self, calibration_target: CalibrationTarget, **kwargs):

@@ -31,4 +31,3 @@ while True:
     plt.figure()
     plt.imshow(img_2)
     plt.show()
-    renderer.graphicsEngine.removeWindow(renderer.graphicsEngine.windows[1])
