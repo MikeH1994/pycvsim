@@ -86,13 +86,6 @@ class SceneCamera:
             "r": np.copy(self.r)
         }
 
-    def axes(self) -> Tuple[NDArray, NDArray, NDArray]:
-        """
-
-        :return:
-        """
-        return cvmaths.rotation_matrix_to_axes(self.r)
-
     def set_lookpos(self, lookpos: NDArray, up: NDArray):
         """
 
@@ -103,35 +96,35 @@ class SceneCamera:
         r = cvmaths.lookpos_to_rotation_matrix(self.pos, lookpos, up)
         self.r = r
 
-    def set_euler_angles(self, angles, degrees=True):
+    def set_euler_angles(self, angles, degrees=True, mode='absolute'):
+        assert(mode == 'absolute' or mode == 'relative')
         if not degrees:
             angles = np.degrees(angles)
-        r = cvmaths.euler_angles_to_rotation_matrix(angles, degrees=degrees)
+
+        if mode == 'absolute':
+            r = cvmaths.euler_angles_to_rotation_matrix(angles, degrees=degrees)
+        else:
+            euler_angles = cvmaths.rotation_matrix_to_euler_angles(self.r, degrees=degrees)
+            euler_angles += angles
+            r = cvmaths.euler_angles_to_rotation_matrix(euler_angles, degrees=degrees)
         self.r = r
 
-    def rotate(self, angles, degrees=True):
+    def set_pos(self, pos: NDArray, mode = 'absolute'):
+        assert(mode == 'absolute' or mode == 'relative')
+
+        if mode == 'absolute':
+            self.pos = pos
+        else:
+            self.pos += pos
+
+    def get_axes(self) -> Tuple[NDArray, NDArray, NDArray]:
         """
 
-        :param angles:
-        :param degrees:
         :return:
         """
-        euler_angles = cvmaths.rotation_matrix_to_euler_angles(self.r, degrees=degrees)
-        if not degrees:
-            angles = np.degrees(angles)
-        euler_angles += angles
-        r = cvmaths.euler_angles_to_rotation_matrix(euler_angles, degrees=degrees)
-        self.r = r
+        return cvmaths.rotation_matrix_to_axes(self.r)
 
-    def translate(self, pos):
-        """
-
-        :param pos:
-        :return:
-        """
-        self.pos += pos
-
-    def lookpos(self) -> NDArray:
+    def get_lookpos(self) -> NDArray:
         """
         Calculates the lookpos (i.e. a points in 3D space the camera is looking at) from the camera's position and its
             3x3 rotation matrix
@@ -141,15 +134,15 @@ class SceneCamera:
         """
         return cvmaths.rotation_matrix_to_lookpos(self.pos, self.r)
 
-    def up(self) -> NDArray:
+    def get_up(self) -> NDArray:
         """
         Returns the up direction for the camera (the y axis)
         :return: a points along the direction vector that the camera is looking at. Shape (3)
         :rtype: np.ndarray
         """
-        return self.axes()[1]
+        return self.get_axes()[1]
 
-    def calc_pixel_direction(self, u: float, v: float) -> NDArray:
+    def get_pixel_direction(self, u: float, v: float) -> NDArray:
         """
         Get the direction vector corresponding to the given pixel coordinates
 
@@ -173,7 +166,7 @@ class SceneCamera:
         # calculate the direction vector in world coordinates
         return np.matmul(self.r, vec)
 
-    def calc_pixel_point_lies_in(self, points: NDArray) -> NDArray:
+    def get_pixel_point_lies_in(self, points: NDArray) -> NDArray:
         """
         Deproject a point in 3D space on to the 2D image_safe_zone plane, and calculate the coordinates of it
 
@@ -185,7 +178,7 @@ class SceneCamera:
         """
         init_shape = points.shape
         points = points.reshape(-1, 3)
-        x_axis, y_axis, z_axis = self.axes()
+        x_axis, y_axis, z_axis = self.get_axes()
         # calculate the direction vector from the camera to the defined points
         direction_vector = (points - self.pos)
         # convert this vector to local coordinate space by doing dot product of
@@ -220,12 +213,11 @@ class SceneCamera:
         """
         return o3d.t.geometry.RaycastingScene.create_rays_pinhole(
             fov_deg=self.hfov,
-            center=self.lookpos(),
+            center=self.get_lookpos(),
             eye=self.pos,
-            up=self.up(),
+            up=self.get_up(),
             width_px=self.xres,
             height_px=self.yres).numpy()
-
 
     @staticmethod
     def create_camera_from_lookpos(pos: NDArray, lookpos: NDArray, up: NDArray,

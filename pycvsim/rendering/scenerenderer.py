@@ -79,7 +79,7 @@ class SceneRenderer(ShowBase):
         camera = self.cameras[camera_index]
         self.set_render_camera_fov(*camera.get_fov(include_safe_zone=apply_distortion))
         self.set_render_camera_position(camera.pos)
-        self.set_render_camera_lookpos(camera.lookpos(), camera.up())
+        self.set_render_camera_lookpos(camera.get_lookpos(), camera.get_up())
         xres, yres = camera.get_res(include_safe_zone=apply_distortion)
         safe_zone = camera.safe_zone if apply_distortion else 0
 

@@ -8,7 +8,9 @@ class CalibrationManager:
         self.camera_mode: str = "fixed"
         self.max_rotation: float = 45.0
         self.distance: float = 3.0
-        self.n_images: int = 15
+        self.n_horizontal: int = 4
+        self.n_vertical: int = 4
+        self.n_rotation: int = 6
 
         if "camera_mode" in kwargs:
             assert(isinstance(self.camera_mode, str))

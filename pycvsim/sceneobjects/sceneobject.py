@@ -9,6 +9,7 @@ import pycvsim.sceneobjects.utils as pycvsim_utils
 import pycvsim.core
 from scipy.spatial.transform import Rotation
 
+
 class SceneObject:
     node_path: panda3d.core.NodePath = None
     original_mesh: o3d.geometry.TriangleMesh = None
@@ -27,13 +28,19 @@ class SceneObject:
         self.original_mesh = mesh
         SceneObject.n_objects += 1
 
-    def set_pos(self, pos: NDArray):
+    def set_pos(self, pos: NDArray, mode="absolute"):
+        assert(mode == "absolute" or mode == "relative")
+        if mode == "relative":
+            pos += self.get_pos()
         self.node_path.setPos(*pos)
 
     def get_pos(self):
         return self.node_path.get_pos()
 
-    def set_euler_angles(self, angles: NDArray):
+    def set_euler_angles(self, angles: NDArray, mode="absolute"):
+        assert(mode == "absolute" or mode == "relative")
+        if mode == "relative":
+            angles += self.get_euler_angles()
         alpha, beta, gamma = pycvsim.core.xyz_angles_to_panda3d(angles)
         self.node_path.set_hpr(alpha, beta, gamma)
 

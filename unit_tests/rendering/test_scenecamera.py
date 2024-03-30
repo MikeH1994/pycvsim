@@ -30,7 +30,7 @@ class TestSceneCamera(TestCase):
             expected_rays = np.zeros((camera.yres, camera.xres, 6), dtype=np.float32)
             for y in range(camera.yres):
                 for x in range(camera.xres):
-                    dirn = camera.calc_pixel_direction(x, y)
+                    dirn = camera.get_pixel_direction(x, y)
                     expected_rays[y][x][:3] = camera.pos
                     expected_rays[y][x][3:] = dirn
             calculated_rays = camera.generate_rays()
