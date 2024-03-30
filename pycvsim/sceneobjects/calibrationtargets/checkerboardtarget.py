@@ -28,7 +28,6 @@ class CheckerbordTarget(CalibrationTarget):
         color_1 = (255, 255, 255)
         color_2 = (0, 0, 0)
         color_bkg = (255, 255, 255)
-        board_boundary = 0.0
         for param in kwargs:
             if param == "color_1":
                 color_1 = kwargs[param]

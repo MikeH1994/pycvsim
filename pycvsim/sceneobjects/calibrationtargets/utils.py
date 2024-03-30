@@ -64,5 +64,5 @@ def transform_object_points(object_points: NDArray, translation: NDArray, euler_
     pcl = pcl.rotate(r, center=(0, 0, 0))
     # translate
     pcl = pcl.translate(translation)
-    object_points_transformed = pcl.points.numpy().reshape(init_shape)
+    object_points_transformed = np.array(pcl.points).reshape(init_shape)
     return object_points_transformed

@@ -133,10 +133,10 @@ class SceneCamera:
 
     def lookpos(self) -> NDArray:
         """
-        Calculates the lookpos (i.e. a point in 3D space the camera is looking at) from the camera's position and its
+        Calculates the lookpos (i.e. a points in 3D space the camera is looking at) from the camera's position and its
             3x3 rotation matrix
 
-        :return: a point along the direction vector that the camera is looking at. Shape (3)
+        :return: a points along the direction vector that the camera is looking at. Shape (3)
         :rtype: np.ndarray
         """
         return cvmaths.rotation_matrix_to_lookpos(self.pos, self.r)
@@ -144,7 +144,7 @@ class SceneCamera:
     def up(self) -> NDArray:
         """
         Returns the up direction for the camera (the y axis)
-        :return: a point along the direction vector that the camera is looking at. Shape (3)
+        :return: a points along the direction vector that the camera is looking at. Shape (3)
         :rtype: np.ndarray
         """
         return self.axes()[1]
@@ -173,31 +173,41 @@ class SceneCamera:
         # calculate the direction vector in world coordinates
         return np.matmul(self.r, vec)
 
-    def calc_pixel_point_lies_in(self, point: NDArray) -> NDArray:
+    def calc_pixel_point_lies_in(self, points: NDArray) -> NDArray:
         """
         Deproject a point in 3D space on to the 2D image_safe_zone plane, and calculate the coordinates of it
 
-        :param point: a point in 3D space. Shape: (3)
-        :type point: np.ndarray
+        :param points: a point in 3D space. Shape: (3)
+        :type points: np.ndarray
         :return: an array of shape (2) containing the x and y coordinates of the 3D point deprojected on to the
             image_safe_zone plane
         :rtype: np.ndarray
         """
+        init_shape = points.shape
+        points = points.reshape(-1, 3)
         x_axis, y_axis, z_axis = self.axes()
-        # calculate the direction vector from the camera to the defined point
-        direction_vector = point - self.pos
-        # convert this vector to local coordinate space
-        x_prime = direction_vector.dot(x_axis)
-        y_prime = direction_vector.dot(y_axis)
-        z_prime = direction_vector.dot(z_axis)
+        # calculate the direction vector from the camera to the defined points
+        direction_vector = (points - self.pos)
+        # convert this vector to local coordinate space by doing dot product of
+        # direction vector and each axis
+        x_prime = np.sum(direction_vector*x_axis, axis=-1)
+        y_prime = np.sum(direction_vector*y_axis, axis=-1)
+        z_prime = np.sum(direction_vector*z_axis, axis=-1)
         hfov = np.radians(self.hfov)
         vfov = np.radians(self.vfov)
-        # deproject on to image_safe_zone plane
+        # deproject on to image plane
         k_x = 2 * z_prime * np.tan(hfov / 2.0)
         k_y = 2 * z_prime * np.tan(vfov / 2.0)
         u = ((x_prime / k_x + 0.5) * self.xres)
         v = ((y_prime / k_y + 0.5) * self.yres)
-        return np.array([u, v])
+        #
+        result = np.zeros((x_prime.shape[0], 2))
+        result[:, 0] = u
+        result[:, 1] = v
+        # returned shape is the same as initial shape, but final dimension is 2 instead of 3
+        returned_shape = (*init_shape[:-1], 2)
+        result.reshape(returned_shape)
+        return result
 
     def generate_rays(self) -> NDArray:
         """
@@ -227,7 +237,7 @@ class SceneCamera:
 
         :param pos: the position of the camera in world coordinates. Shape (3)
         :type pos: np.ndarray
-        :param lookpos: a point in world coordinates the camera is looking at. Shape (3)
+        :param lookpos: a points in world coordinates the camera is looking at. Shape (3)
         :rtype look_pos: np.ndarray
         :param up: the world direction vector corresponding to the up direction in the camera's image_safe_zone. Shape (3)
         :type up: np.ndarray

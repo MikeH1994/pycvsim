@@ -110,7 +110,7 @@ def lookpos_to_rotation_matrix(pos: NDArray, look_pos: NDArray, y_axis: NDArray)
 
     :param pos: the position of the camera in world coordinates. Shape (3)
     :type pos: np.ndarray
-    :param look_pos: a point in world coordinates the camera is looking at. Shape (3)
+    :param look_pos: a points in world coordinates the camera is looking at. Shape (3)
     :rtype lookpos: np.ndarray
     :param y_axis: the world direction vector corresponding to the y axis ('up') in the camera's frame of reference.
         Shape (3)
@@ -120,7 +120,7 @@ def lookpos_to_rotation_matrix(pos: NDArray, look_pos: NDArray, y_axis: NDArray)
     """
     r = np.zeros((3, 3))
     # the z axis in the camera's local coordinates defines the plane going out from the optical centre of the
-    # camera to a point where the camera is looking at
+    # camera to a points where the camera is looking at
     z_prime = (look_pos - pos) / np.linalg.norm(look_pos - pos)
     # calculate the y axis closest to the one specified
     y_prime = calc_closest_y_direction(z_prime, y_axis)
