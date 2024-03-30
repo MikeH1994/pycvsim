@@ -1,11 +1,8 @@
-import numpy as np
-import cv2
-from numpy.typing import NDArray
 from typing import Tuple
+from typing import Union, List
 import cv2
 import numpy as np
 from numpy.typing import NDArray
-from typing import Union, List
 from .colour import get_colour
 
 
@@ -121,4 +118,3 @@ def resize_image(img: NDArray, dst_size: Tuple[int, int],
         return img
     else:
         raise Exception("Unknown mode -", mode)
-

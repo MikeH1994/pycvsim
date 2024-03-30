@@ -4,6 +4,7 @@ from typing import Tuple
 from numpy.typing import NDArray
 from scipy.optimize import minimize
 from scipy.spatial.transform import Rotation
+from pycvsim.core.globalsettings import GlobalSettings
 
 
 def rotate_vector_around_axis(vector: NDArray, axis: NDArray, angle: float):
@@ -145,11 +146,25 @@ def rotation_matrix_to_lookpos(pos: NDArray, r: NDArray):
     lookpos = pos + look_dir
     return lookpos
 
-def panda3d_angles_to_xyz(euler_angles):
-    rotation_matrix = Rotation.from_euler('zxy', euler_angles, degrees=True)
-    return rotation_matrix.as_euler('xyz', degrees=True)
 
-def xyz_angles_to_panda3d(euler_angles):
-    rotation_matrix = Rotation.from_euler('zxy', euler_angles, degrees=True)
-    return rotation_matrix.as_euler('zyx', degrees=True)
+def panda3d_angles_to_xyz(euler_angles, degrees=True):
+    """
+    Converts euler angles in the Panda3D format (zxy) to the xyz euler angle format used
+    by Open3D
+    :param euler_angles:
+    :param degrees:
+    :return:
+    """
+    rotation_matrix = Rotation.from_euler(GlobalSettings.PANDA3D_EULER_AXES, euler_angles, degrees=degrees)
+    return rotation_matrix.as_euler(GlobalSettings.OPEN3D_EULER_AXES, degrees=degrees)
 
+
+def xyz_angles_to_panda3d(euler_angles, degrees=True):
+    """
+    Converts euler angles in xyz format to the zxy format used by Panda3D
+    :param euler_angles:
+    :param degrees:
+    :return:
+    """
+    rotation_matrix = Rotation.from_euler(GlobalSettings.OPEN3D_EULER_AXES, euler_angles, degrees=degrees)
+    return rotation_matrix.as_euler(GlobalSettings.PANDA3D_EULER_AXES, degrees=degrees)

@@ -13,9 +13,6 @@ import cv2
 obj = SceneObject.load_armadillo()
 
 cameras = [
-    #SceneCamera.create_camera_from_euler_angles(object_pos=np.array([0.0, 0.0, -1.5]),
-    #                                            euler_angles=np.array([0, 0, 0]),
-    #                                            res=(720, 720), hfov=60.0)
     SceneCamera.create_camera_from_lookpos(pos=np.array([0.0, 0.0, -2.0]),
                                            lookpos=np.array([0.0, 0.0, 0.0]),
                                            up=np.array([0.0, 1.0, 0.0]),
@@ -24,14 +21,10 @@ cameras = [
 
 renderer = SceneRenderer(cameras=cameras, objects=[obj])
 
-#fig = plt.figure()
-#ax_1 = fig.add_subplot(111)
-#im_1 = ax_1.imshow(np.zeros((640, 512), dtype=np.uint8))
-#plt.ion()
 
 while True:
     for i in range(3):
-        angles = np.random.uniform(low=-50, high=50, size=3)
+        angles = np.random.uniform(low=-180, high=180, size=3)
         object_pos = np.random.uniform(low=-0.2, high=0.2, size=3)
         obj.set_pos(object_pos)
         obj.set_euler_angles(angles)
@@ -42,23 +35,24 @@ while True:
         renderer.set_camera_lookpos(0, object_pos, np.array([0.0, 1.0, 0.0]))
 
         img_render = renderer.render_image(0, apply_distortion=True)
-        img_1 = cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY)
-        img_1 = (img_1 != 51).astype(np.uint8)
-        img_2 = renderer.raycast_scene(0)["object_ids"] + 1
-        img_3 = np.zeros((*img_1.shape, 3), dtype=np.uint8)
-        img_3[img_1 == 1] = [255.0, 0.0, 0.0]
-        img_3[img_2 == 1] = [0.0, 255.0, 0.0]
-        img_3[(img_1 == 1) & (img_2 == 1)] = [255.0, 255.0, 0.0]
+        img_panda = cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY)
+        img_panda = (img_panda != 51).astype(np.uint8)
+        img_o3d = renderer.raycast_scene(0)["object_ids"] + 1
+        img_3 = np.zeros((*img_panda.shape, 3), dtype=np.uint8)
+        img_3[img_panda == 1] = [255.0, 0.0, 0.0]
+        img_3[img_o3d == 1] = [0.0, 255.0, 0.0]
+        img_3[(img_panda == 1) & (img_o3d == 1)] = [255.0, 255.0, 0.0]
 
-        plt.imshow(img_render)
+        intersection = np.sum((img_panda == 1) & (img_o3d == 1))
+        union = np.sum((img_panda == 1) | (img_o3d == 1))
+        iou = intersection / union
+
         plt.figure()
-        plt.imshow(img_2)
-        plt.figure()
+        plt.suptitle("IOU = {}".format(iou))
+        plt.subplot(1, 3, 1)
+        plt.imshow(img_panda)
+        plt.subplot(1, 3, 2)
+        plt.imshow(img_o3d)
+        plt.subplot(1, 3, 3)
         plt.imshow(img_3)
         plt.show()
-
-
-        """im_1.set_data(img_1)
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        plt.pause(0.02)"""

@@ -106,21 +106,21 @@ class SceneCamera:
     def set_euler_angles(self, angles, degrees=True):
         if not degrees:
             angles = np.degrees(angles)
-        r = cvmaths.euler_angles_to_rotation_matrix(angles)
+        r = cvmaths.euler_angles_to_rotation_matrix(angles, degrees=degrees)
         self.r = r
 
-    def rotate(self, angles, degrees = True):
+    def rotate(self, angles, degrees=True):
         """
 
         :param angles:
         :param degrees:
         :return:
         """
-        euler_angles = cvmaths.rotation_matrix_to_euler_angles(self.r)
+        euler_angles = cvmaths.rotation_matrix_to_euler_angles(self.r, degrees=degrees)
         if not degrees:
             angles = np.degrees(angles)
         euler_angles += angles
-        r = cvmaths.euler_angles_to_rotation_matrix(euler_angles)
+        r = cvmaths.euler_angles_to_rotation_matrix(euler_angles, degrees=degrees)
         self.r = r
 
     def translate(self, pos):

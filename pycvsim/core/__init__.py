@@ -8,11 +8,10 @@ from .vector_maths import (create_perpendicular_vector,
                            rotation_matrix_to_lookpos,
                            xyz_angles_to_panda3d,
                            panda3d_angles_to_xyz)
-
 from .pinhole_camera_maths import (focal_length_to_hfov,
                                    hfov_to_focal_length,
                                    hfov_to_vfov,
                                    create_camera_matrix,
                                    calculate_hfov_for_safe_zone)
-
 from .image_utils import (overlay_points_on_image, resize_image)
+from .globalsettings import GlobalSettings
