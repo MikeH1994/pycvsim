@@ -12,13 +12,13 @@ import numpy.testing
 scene_object = CheckerbordTarget((7, 6), (0.05, 0.05), board_thickness=0.02,
                                  color_1=(255, 255, 255), color_2=(0, 0, 0),
                                  color_bkg=(128, 0, 0), board_boundary=0.05, name="checkerboard")
-cameras = [SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(720, 720), hfov=30.0)]
+cameras = [SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(720, 720), hfov=30.0, safe_zone=100)]
 renderer = SceneRenderer(cameras=cameras, objects=[scene_object])
 
 
 class TestSceneCamera(TestCase):
 
-    def test(self, plot=True, thresh=0.1):
+    def test(self, plot=True, thresh=0.5):
         for _ in range(30):
             angles = np.array([np.random.uniform(low=-10, high=10, size=1)[0],
                                np.random.uniform(low=-10, high=10, size=1)[0],
@@ -42,7 +42,9 @@ class TestSceneCamera(TestCase):
                 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
                 calc_image_points = cv2.cornerSubPix(img_gray, calc_image_points, (7, 6), (-1, -1), criteria)
                 img_overlayed_1 = overlay_points_on_image(img_render, exp_image_points)
+
                 img_overlayed_2 = cv2.drawChessboardCorners(img_render, (7, 6), calc_image_points, ret)
+
 
                 if plot:
                     plt.figure()
@@ -52,7 +54,7 @@ class TestSceneCamera(TestCase):
                     plt.imshow(img_overlayed_2)
                     plt.show()
 
-                calc_image_points = calc_image_points.reshape(-1, 2)[::-1, :]
-                error = np.linalg.norm((calc_image_points - exp_image_points)**2, axis=-1)
+                calc_image_points = calc_image_points.reshape(-1, 2)
+                error = np.linalg.norm(calc_image_points - exp_image_points, axis=-1)
                 print(np.mean(error))
                 np.testing.assert_array_less(error, thresh, "failed")

@@ -17,7 +17,7 @@ class SceneCamera:
 
     def __init__(self, pos: NDArray = np.zeros(3), r: NDArray = np.eye(3), res: Tuple[int, int] = (640, 512),
                  hfov: float = 40.0, name: str = "", optical_center: Tuple[float, float] = None,
-                 distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 0):
+                 distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100):
         """
         Creates a Camera instance using a position in space and a 3x3 rotation matrix to define the viewing direction
 
@@ -39,14 +39,14 @@ class SceneCamera:
         self.xres: int = int(res[0])
         self.yres: int = int(res[1])
         self.image_size = (self.xres, self.yres)
-        self.cx, self.cy = optical_center if optical_center is not None else (self.xres/2, self.yres/2)
+        self.cx, self.cy = optical_center if optical_center is not None else ((self.xres-1)/2, (self.yres-1)/2)
         self.hfov: float = hfov
         self.vfov: float = cvmaths.hfov_to_vfov(hfov, self.xres, self.yres)
         self.r: NDArray = r
         self.name: str = name
         self.safe_zone: int = safe_zone
         self.distortion_coeffs: NDArray = distortion_coeffs
-        f = cvmaths.hfov_to_focal_length(self.hfov, self.xres)
+        f = cvmaths.fov_to_focal_length(self.hfov, self.xres)
         self.camera_matrix = cvmaths.create_camera_matrix(self.cx, self.cy, f)
         self.distortion_model: DistortionModel = DistortionModel(self.camera_matrix, self.distortion_coeffs,
                                                                  self.image_size, safe_zone=safe_zone)
@@ -111,7 +111,6 @@ class SceneCamera:
 
     def set_pos(self, pos: NDArray, mode = 'absolute'):
         assert(mode == 'absolute' or mode == 'relative')
-
         if mode == 'absolute':
             self.pos = pos
         else:
@@ -142,7 +141,7 @@ class SceneCamera:
         """
         return self.get_axes()[1]
 
-    def get_pixel_direction(self, u: float, v: float) -> NDArray:
+    def get_pixel_direction(self, u: float, v: float, apply_distortion=True) -> NDArray:
         """
         Get the direction vector corresponding to the given pixel coordinates
 
@@ -155,18 +154,19 @@ class SceneCamera:
         :rtype: np.ndarray
         """
         # define the optical centre of the
-        c_x = self.xres / 2.0
-        c_y = self.yres / 2.0
+        cx = self.cx
+        cy = self.cy
 
         # calculate the direction vector of the ray in local coordinates
         vz = 1
-        vx = 2.0 * vz * (u - c_x + 0.5) / self.xres * np.tan(np.radians(self.hfov / 2.0))
-        vy = 2.0 * vz * (v - c_y + 0.5) / self.yres * np.tan(np.radians(self.vfov / 2.0))
+        vx = 2.0 * vz * (u - cx + 0.5) / self.xres * np.tan(np.radians(self.hfov / 2.0))
+        vy = 2.0 * vz * (v - cy + 0.5) / self.yres * np.tan(np.radians(self.vfov / 2.0))
         vec = np.array([vx, vy, vz])
         # calculate the direction vector in world coordinates
-        return np.matmul(self.r, vec)
+        vec = np.matmul(self.r, vec)
+        return vec / np.linalg.norm(vec)
 
-    def get_pixel_point_lies_in(self, points: NDArray) -> NDArray:
+    def get_pixel_point_lies_in(self, points: NDArray, apply_distortion=True) -> NDArray:
         """
         Deproject a point in 3D space on to the 2D image_safe_zone plane, and calculate the coordinates of it
 
@@ -200,6 +200,10 @@ class SceneCamera:
         # returned shape is the same as initial shape, but final dimension is 2 instead of 3
         returned_shape = (*init_shape[:-1], 2)
         result.reshape(returned_shape)
+
+        #if apply_distortion:
+        #    result = self.distortion_model.distort_points(result)
+
         return result
 
     def generate_rays(self) -> NDArray:
@@ -211,6 +215,7 @@ class SceneCamera:
         :return: a 3D array of shape (yres, xres, 6) corresponding to the open3d rays for each pixel
         :rtype: np.ndarray
         """
+
         return o3d.t.geometry.RaycastingScene.create_rays_pinhole(
             fov_deg=self.hfov,
             center=self.get_lookpos(),

@@ -6,8 +6,9 @@ from pycvsim.rendering.scenerenderer import SceneRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 
 scene_object = SceneObject.load_armadillo()
-cameras = [SceneCamera(pos=np.array([0.0, 0.0, -2.0]), res=(720, 720), hfov=60.0)]
+cameras = [SceneCamera(pos=np.array([0.0, 0.0, -2.0]), res=(720, 720), hfov=60.0, safe_zone=100)]
 renderer = SceneRenderer(cameras=cameras, objects=[scene_object])
+
 
 class TestSceneCamera(TestCase):
     def iou(self, img_panda, img_o3d):

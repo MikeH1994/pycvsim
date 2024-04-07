@@ -73,7 +73,13 @@ class SceneRenderer(ShowBase):
         up = LPoint3f(up[0], up[1], up[2])
         self.camera.lookAt(pos, up)
 
-    def render_image(self, camera_index, apply_distortion=True):
+    def render_all_images(self, apply_distortion=True, remove_safe_zone=True) -> List[NDArray]:
+        images = []
+        for i in range(len(self.cameras)):
+            images.append(self.render_image(i, apply_distortion=apply_distortion, remove_safe_zone=remove_safe_zone))
+        return images
+
+    def render_image(self, camera_index, apply_distortion=True, remove_safe_zone=True):
         if camera_index >= len(self.cameras):
             raise Exception("Camera index {} is out of bounds".format(camera_index))
         camera = self.cameras[camera_index]
@@ -81,7 +87,6 @@ class SceneRenderer(ShowBase):
         self.set_render_camera_position(camera.pos)
         self.set_render_camera_lookpos(camera.get_lookpos(), camera.get_up())
         xres, yres = camera.get_res(include_safe_zone=apply_distortion)
-        safe_zone = camera.safe_zone if apply_distortion else 0
 
         fb_prop = FrameBufferProperties()
         fb_prop.setRgbColor(True)
@@ -105,13 +110,12 @@ class SceneRenderer(ShowBase):
         bgr_img.shape = (bgr_tex.getYSize(), bgr_tex.getXSize(), bgr_tex.getNumComponents())
         bgr_img = bgr_img[:, ::-1, :3]
         if apply_distortion:
-            bgr_img = camera.distortion_model.distort_image(bgr_img)
-
-        if safe_zone > 0:
-            bgr_img = bgr_img[safe_zone:-safe_zone, safe_zone:-safe_zone, :]
-
+            bgr_img = camera.distortion_model.distort_image(bgr_img, remove_safe_zone=remove_safe_zone)
         self.graphicsEngine.removeWindow(self.graphicsEngine.windows[1])
-        return bgr_img
+        img = np.zeros(bgr_img.shape, dtype=np.uint8)
+        img[:, :, :] = bgr_img
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        return img
 
     def raycast_scene(self, camera_index):
         rays = self.cameras[camera_index].generate_rays()

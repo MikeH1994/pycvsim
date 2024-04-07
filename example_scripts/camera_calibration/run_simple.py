@@ -1,0 +1,75 @@
+from pycvsim.datageneration.calibrationmanager import CalibrationManager
+from pycvsim.rendering import SceneRenderer, SceneCamera
+from pycvsim.sceneobjects.calibrationtargets import CheckerbordTarget
+import numpy as np
+import matplotlib.pyplot as plt
+import cv2
+from pycvsim.core.image_utils import overlay_points_on_image
+from calibration.device import Device
+from calibration.stereo import StereoPair
+from pycvsim.core.pinhole_camera_maths import fov_to_focal_length, focal_length_to_fov
+
+
+def create_checkerboard_points(board_size, dx):
+    board_size = board_size
+    dx = dx
+    object_points = np.zeros((board_size[0] * board_size[1], 3), np.float32)
+    object_points[:, :2] = np.indices(board_size).T.reshape(-1, 2)
+    object_points *= dx
+    return object_points
+
+
+def run(board_size=(11, 9), resolution=(800, 800), dx=0.1):
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    camera = SceneCamera(pos=np.array([-0.0, 0.0, -1.5]), res=resolution, hfov=30.0)
+    cameras = [camera]
+    calibration_target = CheckerbordTarget(board_size, (dx, dx), board_thickness=0.02, color_bkg=(128, 0, 0))
+    manager = CalibrationManager(cameras=cameras, calibration_target=calibration_target, n_horizontal=8, n_vertical=8,
+                                 n_angles=9, target_fill=0.4)
+    setpoints = manager.generate_setpoints()
+    images = manager.run(setpoints)
+    # create_checkerboard_points(board_size, dx)  #
+    objp = calibration_target.get_object_points(transformed=False).astype(np.float32)
+    # Arrays to store object points and image points from all the images.
+    objpoints = []  # 3d point in real world space
+    imgpoints = []  # 2d points in image plane.
+    print("{} images".format(len(images)))
+    for images_in_setpoint in images:
+        image = images_in_setpoint[0]
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Find the chess board corners
+        ret, corners = cv2.findChessboardCorners(gray, board_size, None)
+
+        # If found, add object points, image points (after refining them)
+        if ret:
+            objpoints.append(objp)
+            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+            imgpoints.append(corners2)
+            # Draw and display the corners
+            cv2.drawChessboardCorners(image, board_size, corners2, ret)
+        cv2.imshow('img', image)
+        cv2.waitKey(500)
+    cv2.destroyAllWindows()
+
+    calibration_flags = cv2.CALIB_FIX_PRINCIPAL_POINT | cv2.CALIB_FIX_K4 | cv2.CALIB_FIX_K5
+    ret, camera_matrix, distortion_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],
+                                                                              None, None,
+                                                                              flags=calibration_flags)
+    fovx, fovy, focalLength, principalPoint, aspectRatio = cv2.calibrationMatrixValues(camera_matrix,
+                                                                                           gray.shape[::-1],  0.0, 0.0)
+
+    print("Calculated camera matrix")
+    print(camera_matrix)
+    print("Actual camera matrix")
+    print(camera.camera_matrix)
+    print("Calculated Distortion coefficients")
+    print(distortion_coeffs)
+    print("Actual Distortion Coefficients")
+    print(camera.distortion_coeffs)
+    print("Fov")
+    print(fovx, fovy)
+
+
+if __name__ == "__main__":
+    run()

@@ -7,6 +7,7 @@ from numpy.typing import NDArray
 from panda3d.core import WindowProperties, NodePath, AntialiasAttrib
 import pycvsim.sceneobjects.utils as pycvsim_utils
 import pycvsim.core
+from typing import List
 from scipy.spatial.transform import Rotation
 
 
@@ -55,6 +56,14 @@ class SceneObject:
         mesh = mesh.rotate(r, center=(0, 0, 0))
         mesh = mesh.translate(self.get_pos())
         return mesh
+
+    @staticmethod
+    def transform(p0: NDArray, p1: NDArray, axes_0: List[NDArray, NDArray, NDArray],
+                  axes_1: List[NDArray, NDArray, NDArray]):
+        translation = p1 - p0
+        vx_1, vy_1, vz_1 = axes_0
+        vx_2, vy_2, vz_2 = axes_1
+
 
     @staticmethod
     def load_from_file(filepath: str) -> SceneObject:

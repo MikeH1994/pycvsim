@@ -140,11 +140,11 @@ class GUI:
             if kind == "left":
                 angles = np.array([-self.k_camera_angle * dy,
                                    self.k_camera_angle * dx, 0])
-                self.renderer.cameras[self.get_camera_index()].rotate(angles)
+                self.renderer.cameras[self.get_camera_index()].set_euler_angles(angles, mode="relative")
             elif kind == "right":
                 pos = np.array([self.k_camera_pos*dx,
                                 self.k_camera_pos*dy, 0.0])
-                self.renderer.cameras[self.get_camera_index()].translate(pos)
+                self.renderer.cameras[self.get_camera_index()].set_pos(pos, mode="relative")
             self.last_mousepos = (event.x, event.y)
             self.render()
         return func

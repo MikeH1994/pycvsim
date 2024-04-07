@@ -7,18 +7,17 @@ from .utils import create_box
 
 
 class CheckerbordTarget(CalibrationTarget):
-    def __init__(self, board_size: Tuple[int, int], grid_size: Tuple[float, float], board_thickness, name="", **kwargs):
+    def __init__(self, board_size: Tuple[int, int], grid_size: Tuple[float, float], board_thickness=0.05, name="", **kwargs):
         tensor_mesh, obj_points = CheckerbordTarget.create_target(board_size, grid_size, board_thickness, **kwargs)
 
-        board_width, board_height = board_size
-        grid_width, grid_height = grid_size
+        grid_width, grid_height = 0.0, 0.0 # grid_size
         min_x, min_y, _ = np.min(obj_points, axis=0)
         max_x, max_y, _ = np.max(obj_points, axis=0)
         obj_boundary = np.array([
             np.array([min_x - grid_width, min_y - grid_height, 0.0]),
             np.array([max_x + grid_width, min_y - grid_height, 0.0]),
-            np.array([min_x - grid_width, max_x + grid_height, 0.0]),
-            np.array([max_x + grid_width, max_x + grid_height, 0.0])
+            np.array([min_x - grid_width, max_y + grid_height, 0.0]),
+            np.array([max_x + grid_width, max_y + grid_height, 0.0])
         ])
         super().__init__(tensor_mesh, obj_points, obj_boundary, name)
 
@@ -62,47 +61,4 @@ class CheckerbordTarget(CalibrationTarget):
         object_points -= centre
         mesh = mesh.translate(-centre)
 
-        return mesh, object_points
-
-
-"""
-        if board_boundary > 0.0:
-            k = board_boundary
-            bl = object_points[0, 0] + np.array([-dx, -dy, 0.0])
-            br = object_points[0, grid_size - 1] + np.array([dx, -dy, 0.0])
-            tl = object_points[board_height - 1, 0] + np.array([-dx, dy, 0.0])
-            tr = object_points[board_height - 1, grid_size - 1] + np.array([dx, dy, 0.0])
-            color = color_bkg
-
-            # create boundary on top
-            p0 = tl + np.array([-k, 0, 0.0])
-            p1 = tr + np.array([k, 0, 0.0])
-            p2 = tr + np.array([k, k, 0.0])
-            p3 = tl + np.array([-k, k, 0.0])
-            create_square([p0, p1, p2, p3], color, vertices=vertices, vertex_colors=vertex_colors,
-                          triangle_indices=triangle_indices)
-
-            # create boundary on bottom
-            p0 = bl + np.array([-k, -k, 0.0])
-            p1 = br + np.array([k, -k, 0.0])
-            p2 = br + np.array([k, 0.0, 0.0])
-            p3 = bl + np.array([-k, 0.0, 0.0])
-            create_square([p0, p1, p2, p3], color, vertices=vertices, vertex_colors=vertex_colors,
-                          triangle_indices=triangle_indices)
-
-            # create boundary on left
-            p0 = bl + np.array([-k, -k, 0.0])
-            p1 = bl + np.array([0.0, -k, 0.0])
-            p2 = tl + np.array([0.0, k, 0.0])
-            p3 = tl + np.array([-k, k, 0.0])
-            create_square([p0, p1, p2, p3], color, vertices=vertices, vertex_colors=vertex_colors,
-                          triangle_indices=triangle_indices)
-
-            # create boundary on right
-            p0 = br + np.array([0.0, -k, 0.0])
-            p1 = br + np.array([k, -k, 0.0])
-            p2 = tr + np.array([k, k, 0.0])
-            p3 = tr + np.array([0.0, k, 0.0])
-            create_square([p0, p1, p2, p3], color, vertices=vertices, vertex_colors=vertex_colors,
-                          triangle_indices=triangle_indices)
-"""
+        return mesh, object_points[::-1, :]

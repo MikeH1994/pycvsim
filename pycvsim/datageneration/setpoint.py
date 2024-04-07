@@ -34,10 +34,10 @@ class ObjectPosSetpoint(ObjectSetpoint):
 
     def apply(self, scene_object: SceneObject):
         if self.pos is not None:
-            scene_object.set_pos()
+            scene_object.set_pos(self.pos, mode=self.pos_mode)
 
         if self.euler_angles is not None:
-            pass
+            scene_object.set_euler_angles(self.euler_angles, self.angle_mode)
 
 
 class CameraSetpoint(Setpoint):
