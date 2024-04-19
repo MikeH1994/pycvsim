@@ -1,9 +1,9 @@
-from pycvsim.sceneobjects.calibrationtargets.calibrationtarget import CalibrationTarget
+from pycvsim.sceneobjects.targets.calibrationtarget import CalibrationTarget
 import open3d as o3d
 import numpy as np
 from numpy.typing import NDArray
 from typing import Tuple
-from .utils import create_box
+from pycvsim.sceneobjects.targets.utils import create_box
 
 
 class CheckerbordTarget(CalibrationTarget):
@@ -28,9 +28,9 @@ class CheckerbordTarget(CalibrationTarget):
         color_2 = (0, 0, 0)
         color_bkg = (255, 255, 255)
         for param in kwargs:
-            if param == "color_1":
+            if param == "color_2":
                 color_1 = kwargs[param]
-            elif param == "color_2":
+            elif param == "color_1":
                 color_2 = kwargs[param]
             elif param == "color_bkg":
                 color_bkg = kwargs[param]

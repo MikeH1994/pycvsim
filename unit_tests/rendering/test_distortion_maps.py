@@ -3,20 +3,16 @@ from unittest import TestCase
 import cv2
 import numpy as np
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.rendering.scenerenderer import SceneRenderer
-from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.sceneobjects.calibrationtargets.checkerboardtarget import CheckerbordTarget
+from pycvsim.rendering.panda3drenderer import Panda3DRenderer
+from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.core.image_utils import overlay_points_on_image
-from pycvsim.rendering.distortionmodel import DistortionModel
-from pycvsim.core.pinhole_camera_maths import create_camera_matrix, fov_to_focal_length, hfov_to_vfov
 import matplotlib.pyplot as plt
-import numpy.testing
 
 board_size = (7, 6)
 scene_object = CheckerbordTarget(board_size, (0.05, 0.05), board_thickness=0.02,
                                  color_1=(255, 255, 255), color_2=(0, 0, 0),
                                  color_bkg=(128, 0, 0), board_boundary=0.05, name="checkerboard")
-renderer = SceneRenderer(objects=[scene_object])
+renderer = Panda3DRenderer(objects=[scene_object])
 
 
 class TestDistortionCoeffs(TestCase):

@@ -69,4 +69,22 @@ def load_armadillo() -> o3d.geometry.TriangleMesh:
     armadillo_mesh = armadillo_mesh.scale(dx, center=(0.0, 0.0, 0.0))
     r = o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz((0.0, 0.0, np.pi))
     armadillo_mesh = armadillo_mesh.rotate(r, armadillo_mesh.get_center())
+    armadillo_mesh = apply_texturing_to_mesh(armadillo_mesh)
     return armadillo_mesh
+
+
+def apply_texturing_to_mesh(mesh: o3d.geometry.TriangleMesh, mode="gradient"):
+    shape = np.array(mesh.vertices).shape
+    if mode == "random":
+        mesh.vertex_colors = o3d.utility.Vector3dVector(np.random.uniform(size=shape))
+    elif mode == "gradient":
+        points = np.asarray(mesh.vertices)
+        vertex_colors = np.zeros(points.shape, dtype=np.float32)
+        min_x, max_x = np.min(points[:, 0]), np.max(points[:, 0])
+        min_y, max_y = np.min(points[:, 1]), np.max(points[:, 1])
+        min_z, max_z = np.min(points[:, 2]), np.max(points[:, 2])
+        vertex_colors[:, 0] = (points[:, 0]-min_x)/(max_x - min_x)
+        vertex_colors[:, 1] = (points[:, 1]-min_y)/(max_y - min_y)
+        vertex_colors[:, 2] = (points[:, 2]-min_z)/(max_z - min_z)
+        mesh.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
+    return mesh

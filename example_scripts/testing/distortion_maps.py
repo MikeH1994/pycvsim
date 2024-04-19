@@ -1,8 +1,6 @@
 import numpy as np
-import cv2
 import matplotlib.pyplot as plt
-from pycvsim.rendering.distortionmodel import DistortionModel
-import time
+from pycvsim.optics.distortionmodel import DistortionModel
 
 w = 2
 safe_zone = 50

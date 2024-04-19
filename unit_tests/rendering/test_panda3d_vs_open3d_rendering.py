@@ -2,12 +2,12 @@ from unittest import TestCase
 import cv2
 import numpy as np
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.rendering.scenerenderer import SceneRenderer
+from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 
 scene_object = SceneObject.load_armadillo()
 cameras = [SceneCamera(pos=np.array([0.0, 0.0, -2.0]), res=(720, 720), hfov=60.0, safe_zone=100)]
-renderer = SceneRenderer(cameras=cameras, objects=[scene_object])
+renderer = Panda3DRenderer(cameras=cameras, objects=[scene_object])
 
 
 class TestSceneCamera(TestCase):

@@ -64,7 +64,6 @@ class SceneObject:
         vx_1, vy_1, vz_1 = axes_0
         vx_2, vy_2, vz_2 = axes_1
 
-
     @staticmethod
     def load_from_file(filepath: str) -> SceneObject:
         mesh = o3d.io.read_triangle_mesh(filepath)

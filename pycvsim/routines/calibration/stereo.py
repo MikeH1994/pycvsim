@@ -29,7 +29,8 @@ class StereoPair:
         self.map_x2 = None
         self.map_y2 = None
         self.calibration_flags = cv2.CALIB_FIX_INTRINSIC | cv2.CALIB_FIX_FOCAL_LENGTH
-
+        self.stereo_image_points_1 = []
+        self.stereo_image_points_2 = []
         self.initialise(dst_image_size)
         self.calibrate(object_points, R_1, T_1)
         print("Stereo pair {},{} calibrated - rms = {:.4f}".format(self.device_1.name,
@@ -227,61 +228,3 @@ class StereoPair:
 
     def get_focal_length(self):
         return self.Q[2][3]
-
-
-def register_image(img_1_depth, img_2, device_2, img_1_mask=None, img_2_mask=None):
-    height_dst, width_dst = img_1_depth.shape[:2]
-    img_dst = np.zeros((height_dst, width_dst), np.uint8)
-    height_src, width_src = img_2.shape[:2]
-
-    img_fn = core.create_image_interpolation_fn(img_2)
-
-    if img_1_mask is None:
-        img_1_mask = np.ones((img_1_depth.shape[:2]))
-    if img_2_mask is None:
-        img_2_mask = np.ones((img_2.shape[:2]))
-
-    for x in range(width_dst):
-        for y in range(height_dst):
-            u, v = device_2.get_pixel_coordinates_of_point(img_1_depth[y][x])
-            if img_1_mask[y][x] == 0:
-                continue
-            if int(u) < 0 or int(u) >= width_src or int(v) < 0 or int(v) >= height_src:
-                continue
-            if img_2_mask[int(v)][int(u)] == 0:
-                continue
-            L = img_fn(u, v)
-            img_dst[y][x] = int(L)
-    return img_dst
-
-
-def register_image_2(img_1_depth, img_2, device_2, img_1_mask=None, img_2_mask=None):
-    height_dst, width_dst = img_1_depth.shape[:2]
-    width_src, height_src = device_2.image_size
-
-    if img_1_mask is None:
-        img_1_mask = np.ones((height_dst, width_dst))
-    if img_2_mask is None:
-        img_2_mask = np.ones((height_src, width_src))
-
-    src_points = []
-    dst_points = []
-
-    for x in range(width_dst):
-        for y in range(height_dst):
-            u, v = device_2.get_pixel_coordinates_of_point(img_1_depth[y][x])
-            if img_1_mask[y][x] == 0:
-                continue
-            if int(u) < 0 or int(u) >= width_src or int(v) < 0 or int(v) >= height_src:
-                continue
-            if img_2_mask[int(v)][int(u)] == 0:
-                continue
-            src_points.append([u, v])
-            dst_points.append([x, y])
-    src_points = np.array(src_points)
-    dst_points = np.array(dst_points)
-    M, mask = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)
-
-    img_warped = cv2.warpPerspective(img_2, M, (width_dst, height_dst))
-
-    return img_warped

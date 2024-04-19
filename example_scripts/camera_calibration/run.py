@@ -1,13 +1,10 @@
-from pycvsim.datageneration.calibrationmanager import CalibrationManager
-from pycvsim.rendering import SceneRenderer, SceneCamera
+from pycvsim.routines.calibration.imagesetgenerator import ImageSetGenerator
+from pycvsim.rendering import SceneCamera
 from pycvsim.sceneobjects.calibrationtargets import CheckerbordTarget
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
-from pycvsim.core.image_utils import overlay_points_on_image
-from calibration.device import Device
-from calibration.stereo import StereoPair
-from pycvsim.core.pinhole_camera_maths import fov_to_focal_length
+from pycvsim.routines.calibration import Device
+from pycvsim.routines.calibration import StereoPair
 
 
 def run(board_size=(7, 6), resolution=(800, 800)):
@@ -17,7 +14,7 @@ def run(board_size=(7, 6), resolution=(800, 800)):
                                                       up=np.array([0.0, 1.0, 0.0]), res=resolution, hfov=30.0)]
     devices = [Device("Camera {}".format(i+1), resolution) for i in range(len(cameras))] # , Device("Right Camera", resolution)
     calibration_target = CheckerbordTarget(board_size, (0.05, 0.05), board_thickness=0.02, color_bkg=(128, 0, 0))
-    manager = CalibrationManager(cameras=cameras, calibration_target=calibration_target, n_horizontal=9, n_vertical=9)
+    manager = ImageSetGenerator(cameras=cameras, calibration_target=calibration_target, n_horizontal=5, n_vertical=5)
     setpoints = manager.generate_setpoints()
     images = manager.run(setpoints)
     for key_index, image_setpoint in enumerate(images):
@@ -25,8 +22,9 @@ def run(board_size=(7, 6), resolution=(800, 800)):
             device = devices[i]
             image = image_setpoint[i]
             success, image_overlayed = device.add_calibration_point(image, key_index, board_size)
-            plt.imshow(image_overlayed)
-            plt.show()
+            #cv2.imshow('img', image_overlayed)
+        #cv2.waitKey(500)
+    #cv2.destroyAllWindows()
 
     object_points = calibration_target.get_object_points(transformed=False)
     for i, device in enumerate(devices):
@@ -38,11 +36,9 @@ def run(board_size=(7, 6), resolution=(800, 800)):
         fovx, fovy, f, principalPoint, _ = cv2.calibrationMatrixValues(device.camera_matrix, device.image_size,
                                                                        device.image_size[0], device.image_size[1])
         print("Fox: {}, {}".format(fovx, fovy))
-        print("Focal length: {}".format(f))
-        print("Focal length (2): {}".format(fov_to_focal_length(fovx, device.image_size[0])))
-    #stereo_pair = StereoPair(devices[0], devices[1], object_points)
-    #print(stereo_pair.T_1)
-    #print(stereo_pair.T_2)
+    stereo_pair = StereoPair(devices[0], devices[1], object_points)
+    print(stereo_pair.T_1)
+    print(stereo_pair.T_2)
 
 
 if __name__ == "__main__":

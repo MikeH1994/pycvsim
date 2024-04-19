@@ -1,4 +1,4 @@
-from pycvsim.sceneobjects.calibrationtargets.calibrationtarget import CalibrationTarget
+from pycvsim.sceneobjects.targets.calibrationtarget import CalibrationTarget
 import open3d as o3d
 import numpy as np
 from numpy.typing import NDArray

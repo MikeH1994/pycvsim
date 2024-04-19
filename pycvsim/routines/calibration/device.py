@@ -11,7 +11,6 @@ from numpy.typing import NDArray
 from pycvsim.core.pinhole_camera_maths import focal_length_to_fov
 
 
-
 class Device:
     """
     A class that handles the reading of each image, finding points on a calibration target and then

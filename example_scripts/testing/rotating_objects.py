@@ -1,7 +1,7 @@
 import numpy as np
-from pycvsim.sceneobjects.calibrationtargets.checkerboardtarget import CheckerbordTarget
+from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.rendering.scenerenderer import SceneRenderer
+from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
 import matplotlib.pyplot as plt
 import cv2
@@ -16,7 +16,7 @@ cameras = [
 ]
 
 obj_mesh = SceneObject(mesh)
-renderer = SceneRenderer(cameras=cameras)
+renderer = Panda3DRenderer(cameras=cameras)
 renderer.add_object(obj_mesh)
 
 fig = plt.figure()
@@ -32,7 +32,7 @@ while True:
             pos = np.random.uniform(-0.2, 0.2, 3)
             angles = np.zeros(3)
             angles[axis] = theta
-            obj_mesh.set_hpr(angles)
+            obj_mesh.set_euler_angles(angles)
             obj_mesh.set_pos(pos)
             img_1 = renderer.render_image(0)
             img_2 = renderer.raycast_scene(0)["object_ids"]

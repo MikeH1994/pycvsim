@@ -1,13 +1,6 @@
 from unittest import TestCase
-import cv2
 import numpy as np
-from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.rendering.scenerenderer import SceneRenderer
-from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.sceneobjects.calibrationtargets.checkerboardtarget import CheckerbordTarget
-from pycvsim.core.image_utils import overlay_points_on_image
-import matplotlib.pyplot as plt
-import numpy.testing
+from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
 
 
 def create_checkerboard_points(board_size, dx):

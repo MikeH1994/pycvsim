@@ -1,33 +1,30 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.rendering.scenerenderer import SceneRenderer
+from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
-
+import matplotlib.pyplot as plt
 
 cameras = [
-    SceneCamera.create_camera_from_euler_angles(pos=np.array([0.0, 0.0, 0.0]),
+    SceneCamera.create_camera_from_euler_angles(pos=np.array([0.0, 0.0, -3.0]),
                                                 euler_angles=np.array([0, 0, 0]),
-                                                res=(640, 512), hfov=50.0),
+                                                res=(640, 512), hfov=30.0),
 ]
 
-renderer = SceneRenderer(cameras=cameras)
 obj_mesh = SceneObject.load_armadillo()
-obj_mesh.set_pos(np.array([0.4, 0.0, 3]))
-renderer.add_object(obj_mesh)
-obj_mesh = SceneObject.load_armadillo()
-obj_mesh.set_pos(np.array([-0.4, 0.0, 3]))
+renderer = Panda3DRenderer(cameras=cameras)
 renderer.add_object(obj_mesh)
 
+fig = plt.figure()
+ax_1 = fig.add_subplot(111)
+im_1 = ax_1.imshow(np.zeros((640, 512), dtype=np.uint8))
+plt.ion()
 
 while True:
-    print(renderer.graphicsEngine.windows)
-    print(type(renderer.graphicsEngine.windows))
-    print(renderer.graphicsEngine.windows[0])
-    print(type(renderer.graphicsEngine.windows[0]))
-    img = renderer.render_image(0)
-    img_2 = renderer.raycast_scene(0)["object_ids"]
-    plt.imshow(img)
-    plt.figure()
-    plt.imshow(img_2)
-    plt.show()
+    for theta in np.linspace(-180, 180, 20):
+        angles = np.array([0.0, theta, 0.0])
+        obj_mesh.set_euler_angles(angles)
+        img_1 = renderer.render_image(0)
+        im_1.set_data(img_1)
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+        plt.pause(0.05)

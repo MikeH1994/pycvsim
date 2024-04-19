@@ -2,7 +2,7 @@ from pycvsim.sceneobjects.sceneobject import SceneObject
 import open3d as o3d
 from numpy.typing import NDArray
 import numpy as np
-from .utils import transform_object_points
+from pycvsim.sceneobjects.targets.utils import transform_object_points
 
 
 class CalibrationTarget(SceneObject):

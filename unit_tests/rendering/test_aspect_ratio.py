@@ -2,12 +2,8 @@ from unittest import TestCase
 import cv2
 import numpy as np
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.rendering.scenerenderer import SceneRenderer
-from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.sceneobjects.calibrationtargets.checkerboardtarget import CheckerbordTarget
-from pycvsim.core.image_utils import overlay_points_on_image
-import matplotlib.pyplot as plt
-import numpy.testing
+from pycvsim.rendering.panda3drenderer import Panda3DRenderer
+from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
 
 
 class TestSceneCamera(TestCase):
@@ -17,7 +13,7 @@ class TestSceneCamera(TestCase):
                                          color_1=(255, 255, 255), color_2=(255, 255, 255),
                                          name="checkerboard")
         cameras = [SceneCamera(pos=np.array([0.0, 0.0, -1.0]), res=(xres, yres), hfov=20.0, safe_zone=100)]
-        renderer = SceneRenderer(cameras=cameras, objects=[scene_object])
+        renderer = Panda3DRenderer(cameras=cameras, objects=[scene_object])
         img = cv2.cvtColor(renderer.render_image(0), cv2.COLOR_RGB2GRAY)
         mask = np.zeros(img.shape[:2], dtype=np.uint8)
         mask[img == 255] = 1

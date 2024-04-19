@@ -1,11 +1,10 @@
 from __future__ import annotations
-from typing import Tuple, Dict
+from typing import Tuple, Union
 import numpy as np
 from numpy.typing import NDArray
-import math
-import open3d as o3d
 import pycvsim.core as cvmaths
-from .distortionmodel import DistortionModel
+import scipy.spatial.transform
+from pycvsim.optics.distortionmodel import DistortionModel
 
 
 class SceneCamera:
@@ -39,20 +38,25 @@ class SceneCamera:
         self.xres: int = int(res[0])
         self.yres: int = int(res[1])
         self.image_size = (self.xres, self.yres)
-        self.cx, self.cy = optical_center if optical_center is not None else ((self.xres-1)/2, (self.yres-1)/2)
+        self.cx, self.cy = optical_center if optical_center is not None else (self.xres/2, self.yres/2) # ((self.xres-1)/2, (self.yres-1)/2)
         self.hfov: float = hfov
         self.vfov: float = cvmaths.hfov_to_vfov(hfov, self.xres, self.yres)
         self.r: NDArray = r
         self.name: str = name
         self.safe_zone: int = safe_zone
         self.distortion_coeffs: NDArray = distortion_coeffs
-        f = cvmaths.fov_to_focal_length(self.hfov, self.xres)
-        self.camera_matrix = cvmaths.create_camera_matrix(self.cx, self.cy, f)
+        self.camera_matrix = self.get_camera_matrix()
         self.distortion_model: DistortionModel = DistortionModel(self.camera_matrix, self.distortion_coeffs,
                                                                  self.image_size, safe_zone=safe_zone)
         self.saved_state = {}
         self.save_state()
         SceneCamera.n_cameras += 1
+
+    def get_camera_matrix(self):
+        hfov, vfov = self.get_fov(include_safe_zone=False)
+        fx = cvmaths.fov_to_focal_length(hfov, self.xres)
+        fy = cvmaths.fov_to_focal_length(vfov, self.yres)
+        return cvmaths.create_camera_matrix(self.cx, self.cy, fx, fy)
 
     def get_fov(self, include_safe_zone=True) -> Tuple[float, float]:
         hfov = self.hfov
@@ -141,32 +145,47 @@ class SceneCamera:
         """
         return self.get_axes()[1]
 
-    def get_pixel_direction(self, u: float, v: float, apply_distortion=True) -> NDArray:
+    def get_3d_point_from_pixel(self, u: float, v: float, distance: float) -> NDArray:
+        return self.pos + distance*self.get_pixel_direction(np.array([u, v]))
+
+    def get_pixel_direction(self, p: Union[NDArray], apply_distortion=False) -> NDArray:
         """
         Get the direction vector corresponding to the given pixel coordinates
 
-        :param u: the coordinates in the x direction of the image_safe_zone
+        :param p: the pixel coordinates
         :type u: float
-        :param v: the coordinates in the y direction of the image_safe_zone
-        :type v: float
         :return: an array of length 3, which corresponds to the direction vector in world space for the given
                  pixel coordinates
         :rtype: np.ndarray
         """
-        # define the optical centre of the
-        cx = self.cx
-        cy = self.cy
+        init_shape = p.shape
+        p = p.reshape(-1, 2)
+        n = p.shape[0]
 
-        # calculate the direction vector of the ray in local coordinates
+        if apply_distortion:
+            pass  # p = self.distortion_model.distort_points(p)
+
+        u = p[:, 0]
+        v = p[:, 1]
+
+        # calculate the direction vector of the rays in local coordinates
         vz = 1
-        vx = 2.0 * vz * (u - cx + 0.5) / self.xres * np.tan(np.radians(self.hfov / 2.0))
-        vy = 2.0 * vz * (v - cy + 0.5) / self.yres * np.tan(np.radians(self.vfov / 2.0))
-        vec = np.array([vx, vy, vz])
-        # calculate the direction vector in world coordinates
-        vec = np.matmul(self.r, vec)
-        return vec / np.linalg.norm(vec)
 
-    def get_pixel_point_lies_in(self, points: NDArray, apply_distortion=True) -> NDArray:
+        vec = np.zeros((n, 3))
+        vec[:, 0] = 2.0 * vz * (u - self.cx) / self.xres * np.tan(np.radians(self.hfov / 2.0))
+        vec[:, 1] = 2.0 * vz * (v - self.cy) / self.yres * np.tan(np.radians(self.vfov / 2.0))
+        vec[:, 2] = vz
+
+        # calculate the direction vector in world coordinates
+        r = scipy.spatial.transform.Rotation.from_matrix(self.r)
+        vec = r.apply(vec)
+        vec /= np.linalg.norm(vec, axis=-1).reshape(-1, 1)
+
+        # reshape to match input size
+        vec = vec.reshape((*init_shape[:-1], 3))
+        return vec
+
+    def get_pixel_point_lies_in(self, points: NDArray, apply_distortion=False) -> NDArray:
         """
         Deproject a point in 3D space on to the 2D image_safe_zone plane, and calculate the coordinates of it
 
@@ -191,38 +210,51 @@ class SceneCamera:
         # deproject on to image plane
         k_x = 2 * z_prime * np.tan(hfov / 2.0)
         k_y = 2 * z_prime * np.tan(vfov / 2.0)
-        u = ((x_prime / k_x + 0.5) * self.xres)
-        v = ((y_prime / k_y + 0.5) * self.yres)
+        u = (x_prime / k_x * self.xres + self.cx)
+        v = (y_prime / k_y * self.yres + self.cy)
         #
         result = np.zeros((x_prime.shape[0], 2))
         result[:, 0] = u
         result[:, 1] = v
         # returned shape is the same as initial shape, but final dimension is 2 instead of 3
-        returned_shape = (*init_shape[:-1], 2)
-        result.reshape(returned_shape)
+        result = result.reshape((*init_shape[:-1], 2))
 
-        #if apply_distortion:
-        #    result = self.distortion_model.distort_points(result)
+        if apply_distortion:
+            pass # result = self.distortion_model.distort_points(result)
 
         return result
 
-    def generate_rays(self) -> NDArray:
+    def generate_rays(self, n_samples: int = 1, apply_distortion=True, mask=None) -> NDArray:
         """
         Generate a set of rays for each pixel in Open3D's format for use in the Open3D raycasting. Each Open3D ray is
             a vector of length 6, where the first 3 elements correspond to the origin of the ray (the camera position),
             and the last 3 elements are the direction vector of the ray
 
-        :return: a 3D array of shape (yres, xres, 6) corresponding to the open3d rays for each pixel
+        :return: a 3D array of shape (yres, xres, n_samples, 6) corresponding to the open3d rays for each pixel
         :rtype: np.ndarray
         """
 
-        return o3d.t.geometry.RaycastingScene.create_rays_pinhole(
-            fov_deg=self.hfov,
-            center=self.get_lookpos(),
-            eye=self.pos,
-            up=self.get_up(),
-            width_px=self.xres,
-            height_px=self.yres).numpy()
+        xx, yy = np.meshgrid(np.arange(self.xres), np.arange(self.yres))
+        xx = xx.reshape(-1)
+        yy = yy.reshape(-1)
+        if mask is not None:
+            mask = mask.reshape(-1)
+            xx = xx[mask > 0]
+            yy = yy[mask > 0]
+        pixel_samples = np.zeros((xx.shape[0], n_samples, 2))
+        pixel_samples[:, :, 0] = xx.reshape((-1, 1))
+        pixel_samples[:, :, 1] = yy.reshape((-1, 1))
+        if n_samples != 1:
+            pixel_samples += np.random.uniform(-0.5, 0.5, size=pixel_samples.shape)
+        pixel_direction = self.get_pixel_direction(pixel_samples, apply_distortion=apply_distortion)
+        rays = np.zeros((*pixel_samples.shape[:-1], 6))
+        rays[:, :, :3] = self.pos
+        rays[:, :, 3:] = pixel_direction
+
+        if mask is None:
+            rays = rays.reshape((self.yres, self.xres, n_samples, 6))
+
+        return rays.astype(np.float32)
 
     @staticmethod
     def create_camera_from_lookpos(pos: NDArray, lookpos: NDArray, up: NDArray,

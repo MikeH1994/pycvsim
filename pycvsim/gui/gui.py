@@ -7,20 +7,20 @@ import numpy as np
 from PIL import ImageTk, Image
 
 import pycvsim.core
-from pycvsim.rendering import SceneRenderer, SceneCamera
+from pycvsim.rendering import Panda3DRenderer, SceneCamera
 from pycvsim.sceneobjects import SceneObject
 from pycvsim.sceneobjects.calibrationtargets import CheckerbordTarget
 from camera_window import AddCameraWindow
 
 
 class GUI:
-    renderer: SceneRenderer
+    renderer: Panda3DRenderer
     displayed_image_size: Tuple[int, int]
 
     def __init__(self, window: tkinter.Tk):
         # Create and display a test window for viewing the menus
         self.window = window
-        self.renderer = SceneRenderer()
+        self.renderer = Panda3DRenderer()
 
         # setup variables
         self.last_mousepos = (0, 0)

@@ -1,7 +1,7 @@
 import numpy as np
-from pycvsim.sceneobjects.calibrationtargets.checkerboardtarget import CheckerbordTarget
+from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.rendering.scenerenderer import SceneRenderer
+from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
 import matplotlib.pyplot as plt
 
@@ -22,7 +22,7 @@ cameras = [
                                            res=(320, 256), hfov=100.0)]
 
 obj_mesh = SceneObject(mesh)
-renderer = SceneRenderer(cameras=cameras)
+renderer = Panda3DRenderer(cameras=cameras)
 renderer.add_object(obj_mesh)
 
 while True:

@@ -1,13 +1,8 @@
-from pycvsim.datageneration.calibrationmanager import CalibrationManager
-from pycvsim.rendering import SceneRenderer, SceneCamera
+from pycvsim.routines.calibration.imagesetgenerator import ImageSetGenerator
+from pycvsim.rendering import SceneCamera
 from pycvsim.sceneobjects.calibrationtargets import CheckerbordTarget
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
-from pycvsim.core.image_utils import overlay_points_on_image
-from calibration.device import Device
-from calibration.stereo import StereoPair
-from pycvsim.core.pinhole_camera_maths import fov_to_focal_length, focal_length_to_fov
 
 
 def create_checkerboard_points(board_size, dx):
@@ -19,15 +14,16 @@ def create_checkerboard_points(board_size, dx):
     return object_points
 
 
-def run(board_size=(11, 9), resolution=(800, 800), dx=0.1):
+def run(board_size=(7, 6), resolution=(800, 800), dx=0.1):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
     camera = SceneCamera(pos=np.array([-0.0, 0.0, -1.5]), res=resolution, hfov=30.0)
     cameras = [camera]
     calibration_target = CheckerbordTarget(board_size, (dx, dx), board_thickness=0.02, color_bkg=(128, 0, 0))
-    manager = CalibrationManager(cameras=cameras, calibration_target=calibration_target, n_horizontal=8, n_vertical=8,
-                                 n_angles=9, target_fill=0.4)
+    manager = ImageSetGenerator(cameras=cameras, calibration_target=calibration_target, n_horizontal=4, n_vertical=4,
+                                n_angles=3, target_fill=0.4, max_alpha=0.0, max_beta=0.0)
     setpoints = manager.generate_setpoints()
     images = manager.run(setpoints)
+    print("Setpoints created")
     # create_checkerboard_points(board_size, dx)  #
     objp = calibration_target.get_object_points(transformed=False).astype(np.float32)
     # Arrays to store object points and image points from all the images.
