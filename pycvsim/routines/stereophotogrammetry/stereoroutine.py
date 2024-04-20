@@ -1,5 +1,6 @@
 from pycvsim.rendering.scenecamera import SceneCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
+from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycvsim.routines.stereophotogrammetry.utils import depth_to_disparity, disparity_to_depth
 import cv2
@@ -14,7 +15,7 @@ class StereoRoutine:
         self.camera_1 = camera_1
         self.camera_2 = camera_2
         self.image_size = camera_1.image_size
-        self.renderer = Panda3DRenderer(cameras=[self.camera_1, self.camera_2])
+        self.renderer = Open3DRenderer(cameras=[self.camera_1, self.camera_2])
         self.map_x1, self.map_y1 = None, None
         self.map_x2, self.map_y2 = None, None
         self.unrectified_to_rectified_transform = None
@@ -56,6 +57,9 @@ class StereoRoutine:
         max_distance = np.max(distance_to_vertices)
 
         mask = self.renderer.raycast_scene(0)["mask"]
+
+        plt.imshow(mask)
+        plt.show()
 
         image_1 = self.renderer.render_image(0)
         image_2 = self.renderer.render_image(1)
@@ -100,10 +104,8 @@ class StereoRoutine:
         img_disp[mask == 0] = min_disp
         img_depth = cv2.reprojectImageTo3D(img_disp, self.q)
 
-        for x in range(img_depth.shape[1]):
-            for y in range(img_depth.shape[0]):
-                img_depth[y][x] = np.matmul(self.unrectified_to_rectified_transform, img_depth[y][x])
-
+        plt.imshow(img_disp)
+        plt.figure()
         plt.imshow(img_depth[:, :, 2])
         plt.show()
 

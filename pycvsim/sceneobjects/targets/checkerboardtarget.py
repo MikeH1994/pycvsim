@@ -10,7 +10,7 @@ class CheckerbordTarget(CalibrationTarget):
     def __init__(self, board_size: Tuple[int, int], grid_size: Tuple[float, float], board_thickness=0.05, name="", **kwargs):
         tensor_mesh, obj_points = CheckerbordTarget.create_target(board_size, grid_size, board_thickness, **kwargs)
 
-        grid_width, grid_height = 0.0, 0.0 # grid_size
+        grid_width, grid_height = grid_size
         min_x, min_y, _ = np.min(obj_points, axis=0)
         max_x, max_y, _ = np.max(obj_points, axis=0)
         obj_boundary = np.array([
