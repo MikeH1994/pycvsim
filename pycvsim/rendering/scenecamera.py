@@ -224,37 +224,32 @@ class SceneCamera:
 
         return result
 
-    def generate_rays(self, n_samples: int = 1, apply_distortion=True, mask=None) -> NDArray:
+    def generate_rays(self, apply_distortion: bool = True, pixel_coords: NDArray = None) -> NDArray:
         """
         Generate a set of rays for each pixel in Open3D's format for use in the Open3D raycasting. Each Open3D ray is
             a vector of length 6, where the first 3 elements correspond to the origin of the ray (the camera position),
             and the last 3 elements are the direction vector of the ray
 
+        :param apply_distortion:
+        :type apply_distortion: bool
+        :param pixel_coords: the (x, y) pixels to sample at. Have any number of dimensions, as long as the last dimension is 2.
+        :type pixel_coords: np.ndarray
         :return: a 3D array of shape (yres, xres, n_samples, 6) corresponding to the open3d rays for each pixel
         :rtype: np.ndarray
         """
 
-        xx, yy = np.meshgrid(np.arange(self.xres), np.arange(self.yres))
-        xx = xx.reshape(-1)
-        yy = yy.reshape(-1)
-        if mask is not None:
-            mask = mask.reshape(-1)
-            xx = xx[mask > 0]
-            yy = yy[mask > 0]
-        pixel_samples = np.zeros((xx.shape[0], n_samples, 2))
-        pixel_samples[:, :, 0] = xx.reshape((-1, 1))
-        pixel_samples[:, :, 1] = yy.reshape((-1, 1))
-        if n_samples != 1:
-            pixel_samples += np.random.uniform(-0.5, 0.5, size=pixel_samples.shape)
-        pixel_direction = self.get_pixel_direction(pixel_samples, apply_distortion=apply_distortion)
-        rays = np.zeros((*pixel_samples.shape[:-1], 6))
-        rays[:, :, :3] = self.pos
-        rays[:, :, 3:] = pixel_direction
+        if pixel_coords is None:
+            xx, yy = np.meshgrid(np.arange(self.xres), np.arange(self.yres))
+            pixel_coords = np.zeros((*xx.shape, 2), dtype=np.float32)
 
-        if mask is None:
-            rays = rays.reshape((self.yres, self.xres, n_samples, 6))
-
-        return rays.astype(np.float32)
+        init_shape = pixel_coords.shape
+        pixel_coords = pixel_coords.reshape((-1, 2))
+        pixel_direction = self.get_pixel_direction(pixel_coords, apply_distortion=apply_distortion)
+        rays = np.zeros((pixel_coords.shape[0], 6), dtype=np.float32)
+        rays[:, :3] = self.pos
+        rays[:, 3:] = pixel_direction
+        rays = rays.reshape((*init_shape[:-1], 6))
+        return rays
 
     @staticmethod
     def create_camera_from_lookpos(pos: NDArray, lookpos: NDArray, up: NDArray,
