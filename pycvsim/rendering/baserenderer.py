@@ -58,10 +58,15 @@ class BaseRenderer:
             raycasting_scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(obj.mesh()))
         ans = raycasting_scene.cast_rays(o3d.core.Tensor(rays))
         object_ids: NDArray = ans['geometry_ids'].numpy()
+        mask = (object_ids != raycasting_scene.INVALID_ID).astype(np.uint8)
+        t_hit = ans['t_hit'].numpy()
+        t_hit[mask == 0] = np.inf
+        p_hit = camera.pos + t_hit.reshape((camera.yres, camera.xres, 1))*rays[:, :, 3:]
         return {
-            "t_hit": ans['t_hit'].numpy(),
+            "t_hit": t_hit,
+            "p_hit": p_hit,
             "object_ids": object_ids,
-            "mask": (object_ids != raycasting_scene.INVALID_ID).astype(np.uint8)
+            "mask": mask
         }
 
     def deproject_points_on_to_image(self, camera_index: int, object_points: NDArray,

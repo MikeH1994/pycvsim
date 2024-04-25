@@ -3,8 +3,15 @@ import numpy as np
 import os
 import copy
 import pickle
+from typing import Tuple
 from numpy.typing import NDArray
 
+"""
+Useful sources:
+
+(1) persective transform matrix: 
+https://answers.opencv.org/question/187734/derivation-for-perspective-transformation-matrix-q/
+"""
 
 def scale_reprojection_matrix(q: NDArray, scale_factor: float):
     q = np.copy(q)
@@ -13,6 +20,12 @@ def scale_reprojection_matrix(q: NDArray, scale_factor: float):
 
 
 def depth_to_disparity(q: NDArray, depth: float):
+    """
+    For a given perspective transform matrix Q, find the disparity that corresponds a given depth.
+    :param q: The
+    :param depth: The distance from the camera,
+    :return:
+    """
     # d = cx - cx' - f Tx/Z' = a + b
     # a = cx-cx' = (cx-cx')/Tx * Tx = Q[3][3]/-Q[3][2]
     # b = -f Tx/Z'= Q[2][3]/Q[3][2]/depth
@@ -34,6 +47,9 @@ def disparity_to_depth(q: NDArray, disparity: float):
 
 def disparity_to_position(q: NDArray, u: float, v: float, d: float):
     """
+
+
+
     Q =
             1       0        0       -c_x
             0       1        0       -c_y
@@ -51,3 +67,23 @@ def disparity_to_position(q: NDArray, u: float, v: float, d: float):
     z = q[2][3]
     w = d * q[3][2] + q[3][3]
     return np.array([x / w, y / w, z / w])
+
+
+def compute_min_and_max_disparity(q: NDArray, min_distance: float, max_distance: float) -> Tuple[int, int]:
+    """
+    Computes the min, max and number of disparities, to be used in the stereo matching process
+    The min and max disparities define how far left or right the SGBM algorithm will search in image 2
+    from the corresponding coordinates in image 1. This relates to the distance from the camera (the depth)
+    that we are searching in. Because the disparities are required to be supplied in multiples of 16,
+    the returned values do not match the requested distances exactly.
+
+    :param q: the perpective transformation matrix Q, generated from the cv2.stereoRectify function
+    :param min_distance: the minimum distance to use, in the same units as we calibrated in
+    :param max_distance: the maxmimum distance to use, in the same units as we calibrated in
+    :return: min_disp, max_disp
+    """
+    disp1 = int(depth_to_disparity(q, min_distance))
+    disp2 = int(depth_to_disparity(q, max_distance))
+    min_disp = min(disp1, disp2) - min(disp1, disp2) % 16
+    max_disp = max(disp1, disp2) + (16 - max(disp1, disp2) % 16)
+    return min_disp, max_disp

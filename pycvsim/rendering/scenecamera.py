@@ -38,7 +38,7 @@ class SceneCamera:
         self.xres: int = int(res[0])
         self.yres: int = int(res[1])
         self.image_size = (self.xres, self.yres)
-        self.cx, self.cy = optical_center if optical_center is not None else (self.xres/2, self.yres/2) # ((self.xres-1)/2, (self.yres-1)/2)
+        self.cx, self.cy = optical_center if optical_center is not None else ((self.xres-1)/2, (self.yres-1)/2)
         self.hfov: float = hfov
         self.vfov: float = cvmaths.hfov_to_vfov(hfov, self.xres, self.yres)
         self.r: NDArray = r
@@ -57,6 +57,11 @@ class SceneCamera:
         fx = cvmaths.fov_to_focal_length(hfov, self.xres)
         fy = cvmaths.fov_to_focal_length(vfov, self.yres)
         return cvmaths.create_camera_matrix(self.cx, self.cy, fx, fy)
+
+    def get_focal_length(self):
+        fx = cvmaths.fov_to_focal_length(self.hfov, self.xres)
+        fy = cvmaths.fov_to_focal_length(self.vfov, self.yres)
+        return fx, fy
 
     def get_fov(self, include_safe_zone=True) -> Tuple[float, float]:
         hfov = self.hfov
@@ -241,6 +246,8 @@ class SceneCamera:
         if pixel_coords is None:
             xx, yy = np.meshgrid(np.arange(self.xres), np.arange(self.yres))
             pixel_coords = np.zeros((*xx.shape, 2), dtype=np.float32)
+            pixel_coords[:, :, 0] = xx
+            pixel_coords[:, :, 1] = yy
 
         init_shape = pixel_coords.shape
         pixel_coords = pixel_coords.reshape((-1, 2))
