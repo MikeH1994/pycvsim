@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 import pycvsim.core as cvmaths
 import scipy.spatial.transform
 from pycvsim.optics.distortionmodel import DistortionModel
-
+from pycvsim.optics.noisemodel import NoiseModel
 
 class SceneCamera:
     """
@@ -16,7 +16,8 @@ class SceneCamera:
 
     def __init__(self, pos: NDArray = np.zeros(3), r: NDArray = np.eye(3), res: Tuple[int, int] = (640, 512),
                  hfov: float = 40.0, name: str = "", optical_center: Tuple[float, float] = None,
-                 distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100):
+                 distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100,
+                 noise_model: NoiseModel = None):
         """
         Creates a Camera instance using a position in space and a 3x3 rotation matrix to define the viewing direction
 
@@ -48,6 +49,7 @@ class SceneCamera:
         self.camera_matrix = self.get_camera_matrix()
         self.distortion_model: DistortionModel = DistortionModel(self.camera_matrix, self.distortion_coeffs,
                                                                  self.image_size, safe_zone=safe_zone)
+        self.noise_model: NoiseModel = noise_model
         self.saved_state = {}
         self.save_state()
         SceneCamera.n_cameras += 1
