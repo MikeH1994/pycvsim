@@ -15,7 +15,7 @@ class Open3DRenderer(BaseRenderer):
         super().__init__(cameras=cameras, objects=objects)
 
     def render_image(self, camera_index, apply_distortion=True, n_samples=32, mask=None, return_as_8_bit=True,
-                     background_colour=np.array([51, 51, 51])):
+                     apply_noise=True, background_colour=np.array([51, 51, 51])):
         n_samples = int(round(math.sqrt(n_samples))**2)
         background_colour = np.array(background_colour)
         if camera_index >= len(self.cameras):
@@ -45,6 +45,8 @@ class Open3DRenderer(BaseRenderer):
             except Exception:
                 print("Open3D rendering buffer failed, reducing number of elements...")
                 k /= 2
+        if apply_noise and camera.noise_model is not None:
+            dst_image = camera.noise_model.apply(dst_image)
         if return_as_8_bit:
             return dst_image.astype(np.uint8)
         return dst_image

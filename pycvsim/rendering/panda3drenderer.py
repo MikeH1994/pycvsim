@@ -34,7 +34,7 @@ class Panda3DRenderer(BaseRenderer):
         up = LPoint3f(up[0], up[1], up[2])
         self.renderer.camera.lookAt(pos, up)
 
-    def render_image(self, camera_index, apply_distortion=True, remove_safe_zone=True, n_samples=32,
+    def render_image(self, camera_index, apply_distortion=True, apply_noise=True, remove_safe_zone=True, n_samples=32,
                      antialiasing=AntialiasAttrib.MAuto):
         if camera_index >= len(self.cameras):
             raise Exception("Camera index {} is out of bounds".format(camera_index))
@@ -72,4 +72,8 @@ class Panda3DRenderer(BaseRenderer):
         img = np.zeros(bgr_img.shape, dtype=np.uint8)
         img[:, :, :] = bgr_img
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        if apply_noise and camera.noise_model is not None:
+            img = camera.noise_model.apply(img)
+
         return img
