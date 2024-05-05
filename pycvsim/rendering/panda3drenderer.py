@@ -35,7 +35,7 @@ class Panda3DRenderer(BaseRenderer):
         up = LPoint3f(up[0], up[1], up[2])
         self.renderer.camera.lookAt(pos, up)
 
-    def render_image(self, camera_index, apply_distortion=True, apply_noise=True, remove_safe_zone=True, n_samples=32,
+    def render_image(self, camera_index, apply_distortion=True, apply_noise=True, n_samples=32,
                      antialiasing=AntialiasAttrib.MAuto):
         if camera_index >= len(self.cameras):
             raise Exception("Camera index {} is out of bounds".format(camera_index))
@@ -71,7 +71,7 @@ class Panda3DRenderer(BaseRenderer):
         img = img[:, ::-1, 2::-1]
 
         if apply_distortion:
-            img = camera.distortion_model.distort_image(img, remove_safe_zone=remove_safe_zone)
+            img = camera.distortion_model.distort_image(img)
 
         self.renderer.graphicsEngine.removeWindow(self.renderer.graphicsEngine.windows[1])
 

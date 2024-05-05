@@ -76,7 +76,7 @@ def load_armadillo() -> o3d.geometry.TriangleMesh:
 def apply_texturing_to_mesh(mesh: o3d.geometry.TriangleMesh, mode="gradient"):
     shape = np.array(mesh.vertices).shape
     if mode == "random":
-        mesh.vertex_colors = o3d.utility.Vector3dVector(np.random.uniform(size=shape))
+        vertex_colors = o3d.utility.Vector3dVector(np.random.uniform(size=shape))
     elif mode == "gradient":
         points = np.asarray(mesh.vertices)
         vertex_colors = np.zeros(points.shape, dtype=np.float32)
@@ -86,5 +86,12 @@ def apply_texturing_to_mesh(mesh: o3d.geometry.TriangleMesh, mode="gradient"):
         vertex_colors[:, 0] = (points[:, 0]-min_x)/(max_x - min_x)
         vertex_colors[:, 1] = (points[:, 1]-min_y)/(max_y - min_y)
         vertex_colors[:, 2] = (points[:, 2]-min_z)/(max_z - min_z)
-        mesh.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
+    else:
+        vertex_colors = o3d.utility.Vector3dVector(np.random.uniform(size=shape))
+        raise Exception("Aaaah!")
+
+    vertex_colors[vertex_colors < 0.0] = 0.0
+    vertex_colors[vertex_colors > 1.0] = 1.0
+    mesh.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
+
     return mesh
