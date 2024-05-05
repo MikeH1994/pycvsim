@@ -1,5 +1,6 @@
 from typing import List
 import cv2
+import matplotlib.pyplot as plt
 import time
 import numpy as np
 import open3d as o3d
@@ -45,10 +46,11 @@ class Panda3DRenderer(BaseRenderer):
         xres, yres = camera.get_res(include_safe_zone=apply_distortion)
 
         fb_prop = FrameBufferProperties()
-        fb_prop.setRgbaBits(8, 8, 8, 8)
+        fb_prop.set_srgb_color(False)
+        fb_prop.set_float_color(True)
+        fb_prop.set_rgba_bits(32, 32, 32, 32)
         fb_prop.setMultisamples(n_samples)
-        fb_prop.setDepthBits(24)
-        fb_prop.set_color_bits(24)
+
         win_prop = WindowProperties.size(xres, yres)
         window: GraphicsBuffer = self.renderer.graphicsEngine.makeOutput(self.renderer.pipe, "cameraview", 0, fb_prop,
                                                                          win_prop, GraphicsPipe.BFRefuseWindow,
@@ -63,15 +65,15 @@ class Panda3DRenderer(BaseRenderer):
             obj.node_path.setAntialias(antialiasing)
 
         self.renderer.graphicsEngine.renderFrame()
-        bgr_img = np.frombuffer(bgr_tex.getRamImage(), dtype=np.uint8)
-        bgr_img.shape = (bgr_tex.getYSize(), bgr_tex.getXSize(), bgr_tex.getNumComponents())
-        bgr_img = bgr_img[:, ::-1, :3]
+        img = np.frombuffer(bgr_tex.getRamImage(), dtype=np.float32)
+        img.shape = (bgr_tex.getYSize(), bgr_tex.getXSize(), bgr_tex.getNumComponents())
+        # flip vertically, discard the last channel and go from rgb to bgr
+        img = img[:, ::-1, 2::-1]
+
         if apply_distortion:
-            bgr_img = camera.distortion_model.distort_image(bgr_img, remove_safe_zone=remove_safe_zone)
+            img = camera.distortion_model.distort_image(img, remove_safe_zone=remove_safe_zone)
+
         self.renderer.graphicsEngine.removeWindow(self.renderer.graphicsEngine.windows[1])
-        img = np.zeros(bgr_img.shape, dtype=np.uint8)
-        img[:, :, :] = bgr_img
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         if apply_noise and camera.noise_model is not None:
             img = camera.noise_model.apply(img)

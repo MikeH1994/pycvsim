@@ -19,9 +19,8 @@ def overlay_points_on_image(image: NDArray, keypoints_list: Union[List[NDArray],
     :return:
     """
     assert(len(image.shape) == 3 and image.shape[2] == 3), "Image suppled should be rgb- shape: {}".format(image.shape)
-    assert(image.dtype == np.uint8), "Image should be uint8"
     image = np.copy(image)
-    image = np.ascontiguousarray(image, dtype=np.uint8) # I don't know why but cv2.rectangle fails otherwise
+    image = np.ascontiguousarray(image) # I don't know why but cv2.rectangle fails otherwise
     keypoints_list = np.array(keypoints_list)
     if len(keypoints_list.shape) == 2:
         keypoints_list = keypoints_list.reshape((1, keypoints_list.shape[0], keypoints_list.shape[1]))
@@ -29,6 +28,7 @@ def overlay_points_on_image(image: NDArray, keypoints_list: Union[List[NDArray],
     assert(keypoints_list.shape[-1] == 2 or keypoints_list.shape[-1] == 3)
 
     # draw keypoints
+    image_points = np.zeros(image.shape, dtype=np.uint8)
     n_objects = len(keypoints_list)
     for i in range(n_objects):
         keypoints = keypoints_list[i]
@@ -39,10 +39,15 @@ def overlay_points_on_image(image: NDArray, keypoints_list: Union[List[NDArray],
 
             point_color = get_colour(i + 1) if color is None else color
 
-            image = cv2.circle(image, centre, radius, point_color, -1)
+            image_points = cv2.circle(image_points, centre, radius, point_color, -1)
             if label:
-                cv2.putText(image, '{}'.format(n+1), org=(centre[0] + dx, centre[1] + dx), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                cv2.putText(image_points, '{}'.format(n+1), org=(centre[0] + dx, centre[1] + dx), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                             fontScale=0.5, color=color, thickness=1, lineType=2)
+    if image.dtype == np.float32:
+        image_points = image_points.astype(np.float32)/255.0
+    image_points_intensity = np.zeros(image_points.shape)
+    image_points_intensity[:, :, :] = np.sum(image_points, axis=-1).reshape(*image_points.shape[:2], 1)
+    image[image_points_intensity > 0] = image_points[image_points_intensity > 0]
     return image
 
 

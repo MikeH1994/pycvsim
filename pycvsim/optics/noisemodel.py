@@ -11,15 +11,15 @@ class NoiseModel:
         self.p_dead_pixels: float = 0.0  # probability of a given pixel being dead
         self.p_blinking_pixels: float = 0.0  # probability of given pixel blinking
         self.p_columnisation: float = 0.0  # probability of a column displaying column noise
-        self.hot_pixel_value: float = 255.0
+        self.hot_pixel_value: float = 1.0
         self.dead_pixel_value: float = 0.0
         self.gain_sigma: float = 0.1
-        self.offset_sigma: float = 5.0
-        self.temporal_noise_sigma: float = 15.0
+        self.offset_sigma: float = 0.01
+        self.temporal_noise_sigma: float = 0.01
         self.columnisation_gain_mean: float = 1.2
         self.columnisation_gain_sigma: float = 0.2
         self.columnisation_offset_mean: float = 0.0
-        self.columnisation_offset_sigma: float = 10.0
+        self.columnisation_offset_sigma: float = 0.01
 
         empty_indices = (np.array([], dtype=np.int64), np.array([], dtype=np.int64))
         self.dead_pixels: Tuple[NDArray, NDArray] = empty_indices
@@ -79,7 +79,8 @@ class NoiseModel:
         self.gain_map = np.random.normal(loc=1.0, scale=self.gain_sigma, size=self.image_size)
         self.offset_map = np.random.normal(scale=self.offset_sigma, size=self.image_size)
 
-    def apply(self, image: NDArray, dst_dtype=np.uint8) -> NDArray:
+    def apply(self, image: NDArray, scaling_mode: str = 'clip') -> NDArray:
+        assert(scaling_mode == "clip" or scaling_mode == "rescale" or scaling_mode == "none")
         reshaped_size = image.shape if len(image.shape) == 2 else (*image.shape[:2], 1)
         image = np.copy(image).astype(np.float32)
         image *= self.gain_map.reshape(reshaped_size)
@@ -88,11 +89,16 @@ class NoiseModel:
         image += temporal_noise
         image[self.dead_pixels] = self.dead_pixel_value
         image[self.hot_pixels] = self.hot_pixel_value
-
         blinking_p_shape = self.blinking_pixels[0].shape if len(image.shape) == 2 else (*self.blinking_pixels[0].shape, 1)
         blinking_p = np.random.uniform(size=blinking_p_shape)
         blinking_values = np.full(shape=blinking_p_shape, fill_value=self.dead_pixel_value)
         blinking_values[blinking_p > 0.5] = self.hot_pixel_value
         image[self.blinking_pixels] = blinking_values
 
-        return rescale_image(image, np.uint8, kind="clip")
+        image[image < 0.0] = 0.0
+        if scaling_mode is "clip":
+            image[image > 1.0] = 1.0
+        elif scaling_mode is "rescale":
+            if np.max(image) > 1.0:
+                image /= np.max(image)
+        return image

@@ -16,7 +16,7 @@ renderer.add_object(obj_mesh)
 
 fig = plt.figure()
 ax_1 = fig.add_subplot(111)
-im_1 = ax_1.imshow(np.zeros((640, 512), dtype=np.uint8))
+im_1 = ax_1.imshow(np.zeros((640, 512, 3), dtype=np.float32))
 plt.ion()
 
 while True:
