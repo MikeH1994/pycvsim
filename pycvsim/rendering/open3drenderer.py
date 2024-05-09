@@ -33,8 +33,7 @@ class Open3DRenderer(BaseRenderer):
         while i <= y_pixels.shape[0]:
             available_memory = psutil.virtual_memory().available
             max_elems = int(k * available_memory / n_samples / 8)
-            print("Available memory: {:.3f} Gb Max elems: {}, n samples: {}".format(available_memory/1e9, max_elems, n_samples))
-            print("{}/{}".format(i, x_pixels.shape[0]))
+
             y_pixels_i = y_pixels[i:i+max_elems]
             x_pixels_i = x_pixels[i:i+max_elems]
             try:
