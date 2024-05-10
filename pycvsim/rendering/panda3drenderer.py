@@ -79,7 +79,10 @@ class Panda3DRenderer(BaseRenderer):
             fb_prop.set_srgb_color(False)
             fb_prop.set_float_color(True)
             fb_prop.set_rgba_bits(32, 32, 32, 32)
-            fb_prop.setMultisamples(n_samples)
+            fb_prop.set_multisamples(n_samples)
+            fb_prop.set_depth_bits(32)
+            fb_prop.set_color_bits(32)
+
         else:
             fb_prop.setRgbaBits(8, 8, 8, 8)
             fb_prop.setMultisamples(n_samples)

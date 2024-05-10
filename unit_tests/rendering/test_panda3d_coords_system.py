@@ -11,7 +11,8 @@ renderer = Panda3DRenderer(cameras=cameras, objects=[scene_object])
 
 
 class TestSceneCamera(TestCase):
-    def iou(self, img_panda, img_o3d):
+    def iou(self, img_panda, img_o3d, plot=True):
+
         intersection = np.sum((img_panda == 1) & (img_o3d == 1))
         union = np.sum((img_panda == 1) | (img_o3d == 1))
         return intersection / union
