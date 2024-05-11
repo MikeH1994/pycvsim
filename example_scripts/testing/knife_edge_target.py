@@ -22,7 +22,7 @@ while True:
         mesh = KnifeEdgeTarget(0.5, angle=theta)
         renderer.remove_all_objects()
         renderer.add_object(mesh)
-        img_1 = renderer.render_image(0)
+        img_1 = renderer.render(0)
         im_1.set_data(img_1)
         fig.canvas.draw()
         fig.canvas.flush_events()

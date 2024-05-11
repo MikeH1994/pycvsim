@@ -33,7 +33,7 @@ while True:
         renderer.set_camera_position(0, camera_pos)
         renderer.set_camera_lookpos(0, object_pos, np.array([0.0, 1.0, 0.0]))
 
-        img_render = renderer.render_image(0, apply_distortion=True)
+        img_render = renderer.render(0, apply_distortion=True)
         img_panda = cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY)
         img_panda = (img_panda != 51).astype(np.uint8)
         img_o3d = renderer.raycast_scene(0)["object_ids"] + 1

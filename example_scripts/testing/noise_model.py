@@ -21,7 +21,7 @@ plt.ion()
 
 while True:
     for theta in np.linspace(-180, 180, 100):
-        img = panda3d_renderer.render_image(0, apply_noise=True)
+        img = panda3d_renderer.render(0, apply_noise=True)
         im_1.set_data(img)
         fig.canvas.draw()
         fig.canvas.flush_events()

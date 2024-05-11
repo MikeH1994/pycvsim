@@ -37,7 +37,7 @@ class TestSceneCamera(TestCase):
                         renderer.set_camera_position(camera_index, camera_pos)
                         renderer.set_camera_lookpos(camera_index, lookpos, np.array([0.0, 1.0, 0.0]))
 
-                        img_render = renderer.render_image(0, n_samples=16, return_as_8_bit=return_as_8_bit).astype(np.uint8)
+                        img_render = renderer.render(0, n_samples=16, return_as_8_bit=return_as_8_bit).astype(np.uint8)
                         img_gray = cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY)
                         object_points = scene_object.get_object_points()[::-1]
                         exp_image_points = renderer.cameras[0].get_pixel_point_lies_in(object_points)

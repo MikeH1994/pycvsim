@@ -85,8 +85,46 @@ class BaseRenderer:
     def render_all_images(self, apply_distortion=True) -> List[NDArray]:
         images = []
         for i in range(len(self.cameras)):
-            images.append(self.render_image(i, apply_distortion=apply_distortion))
+            images.append(self.render(i, apply_distortion=apply_distortion))
         return images
 
-    def render_image(self, camera_index, apply_distortion=True, **kwargs):
-        raise Exception("Base function render_image not called")
+    def render(self, camera_index, apply_distortion=False, apply_noise=False, apply_dof=True, return_as_8_bit=True, **kwargs):
+        """
+
+        :param camera_index:
+        :param apply_distortion:
+        :param apply_noise:
+        :param apply_dof:
+        :param kwargs:
+        :return:
+        """
+        if camera_index >= len(self.cameras):
+            raise Exception("Camera index {} is out of bounds".format(camera_index))
+        camera = self.cameras[camera_index]
+        image = self._render_(camera, **kwargs)
+
+        if apply_dof and camera.dof_model is not None:
+            depth = self.raycast_scene(camera_index, apply_distortion=False)["depth"]
+            image = camera.dof_model.apply(image, depth_map=depth, focus_distance=np.percentile(depth.reshape(-1), 50.0))
+
+        if apply_distortion:
+            image = camera.distortion_model.distort_image(image, remove_safe_zone=False)
+
+        if apply_noise and camera.noise_model is not None:
+            image = camera.noise_model.apply(image)
+
+        if camera.safe_zone > 0:
+            safe_zone = camera.safe_zone
+            image = image[safe_zone:-safe_zone, safe_zone:-safe_zone]
+
+        return image
+
+    def _render_(self, camera: SceneCamera, **kwargs) -> NDArray:
+        """
+        The base function for the renderer to implement. Returns a 3 channel floating point image, of the
+        shape (h, w, 3), where all values lie within the range [0, 1]
+        :param camera: the camera that we are using to render
+        :param kwargs:
+        :return:
+        """
+        raise Exception("Base function _render_function called")

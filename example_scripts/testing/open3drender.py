@@ -24,9 +24,9 @@ while True:
     for theta in np.linspace(-180, 180, 100):
         mesh.set_euler_angles([0, 0, theta])
         image_points = o3d_renderer.cameras[0].get_pixel_point_lies_in(mesh.get_boundary_region(), apply_distortion=False)
-        img_1 = o3d_renderer.render_image(0)
+        img_1 = o3d_renderer.render(0)
         img_1 = overlay_points_on_image(img_1, image_points, radius=6)
-        img_2 = panda3d_renderer.render_image(0)
+        img_2 = panda3d_renderer.render(0)
         img_2 = overlay_points_on_image(img_2, image_points, radius=6)
         im_1.set_data(img_1)
         im_2.set_data(img_2)

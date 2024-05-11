@@ -34,7 +34,7 @@ while True:
             angles[axis] = theta
             obj_mesh.set_euler_angles(angles)
             obj_mesh.set_pos(pos)
-            img_1 = renderer.render_image(0)
+            img_1 = renderer.render(0)
             img_2 = renderer.raycast_scene(0)["object_ids"]
             img_2 = cv2.applyColorMap(((img_2+1)*255).astype(np.uint8), cv2.COLORMAP_JET)
 

@@ -18,7 +18,7 @@ while True:
     for theta in np.linspace(-180, 180, 100):
         mesh.set_euler_angles([0, 0, theta])
         image_points = renderer.cameras[0].get_pixel_point_lies_in(mesh.get_boundary_region())
-        img_1 = renderer.render_image(0)
+        img_1 = renderer.render(0)
         img_1 = overlay_points_on_image(img_1, image_points, radius=6)
         im_1.set_data(img_1)
         fig.canvas.draw()
