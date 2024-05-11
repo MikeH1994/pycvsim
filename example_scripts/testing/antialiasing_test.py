@@ -21,19 +21,19 @@ renderer.add_object(obj_mesh)
 
 renderer.multiple_samples = 128
 renderer.antialiasiang = panda3d.core.AntialiasAttrib.MAuto
-img_auto_16 = renderer.render_image(0)
+img_auto_16 = renderer.render(0)
 
 renderer.multiple_samples = 128
 renderer.antialiasiang = panda3d.core.AntialiasAttrib.MLine
-img_line_16 = renderer.render_image(0)
+img_line_16 = renderer.render(0)
 
 renderer.multiple_samples = 128
 renderer.antialiasiang = panda3d.core.AntialiasAttrib.MMultisample
-img_multi_16 = renderer.render_image(0)
+img_multi_16 = renderer.render(0)
 
 renderer.multiple_samples = 0
 renderer.antialiasiang = panda3d.core.AntialiasAttrib.MNone
-img_none_0 = renderer.render_image(0)
+img_none_0 = renderer.render(0)
 
 # check which antialiasing works best for checkerboard
 fig, ax = plt.subplots(2, 2)
@@ -52,7 +52,7 @@ images = []
 for n_samples in [0, 4, 16, 128]:
     renderer.multiple_samples = n_samples
     renderer.antialiasiang = panda3d.core.AntialiasAttrib.MAuto
-    images.append(renderer.render_image(0))
+    images.append(renderer.render(0))
 # check which antialiasing works best for checkerboard
 fig, ax = plt.subplots(2, 2)
 fig.suptitle('plt.subplots')
@@ -71,7 +71,7 @@ for multisamples in [0, 8, 16, 32, 64]:
     renderer.antialiasiang = panda3d.core.AntialiasAttrib.MAuto
     start = time.time()
     for i in range(100):
-        renderer.render_image(0)
+        renderer.render(0)
     end = time.time()
     t = (end - start) / 100.0
     fps = 1.0 / t

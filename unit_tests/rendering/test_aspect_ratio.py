@@ -14,7 +14,7 @@ class TestSceneCamera(TestCase):
                                          name="checkerboard")
         cameras = [SceneCamera(pos=np.array([0.0, 0.0, -1.0]), res=(xres, yres), hfov=20.0, safe_zone=100)]
         renderer = Panda3DRenderer(cameras=cameras, objects=[scene_object])
-        img = cv2.cvtColor(renderer.render_image(0), cv2.COLOR_RGB2GRAY)
+        img = cv2.cvtColor(renderer.render(0), cv2.COLOR_RGB2GRAY)
         mask = np.zeros(img.shape[:2], dtype=np.uint8)
         mask[img == 255] = 1
 

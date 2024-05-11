@@ -227,7 +227,7 @@ class GUI:
             self.update_image_label(image)
             return
 
-        image = self.renderer.render_image(index)
+        image = self.renderer.render(index)
         self.update_image_label(image)
 
 

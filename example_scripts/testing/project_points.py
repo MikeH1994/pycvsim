@@ -15,7 +15,7 @@ obj.set_euler_angles(np.array([0, 0, 20.0]))
 object_points = obj.get_object_points()
 image_points = renderer.cameras[0].get_pixel_point_lies_in(object_points)
 
-img_render = renderer.render_image(0, apply_distortion=True)
+img_render = renderer.render(0, apply_distortion=True)
 ret, corners = cv2.findChessboardCorners(img_render, (7, 6), None)
 img_overlayed = overlay_points_on_image(img_render, image_points)
 if ret:

@@ -26,6 +26,6 @@ while True:
     for x in np.linspace(-0.2, 0.2, 3):
         for y in np.linspace(-0.2, 0.2, 3):
             obj_mesh.set_pos(np.array([x, y, 0.0]))
-            img = renderer.render_image(0)
+            img = renderer.render(0)
             im.set_data(img)
             plt.pause(0.05)

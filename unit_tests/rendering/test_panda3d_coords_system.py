@@ -24,7 +24,7 @@ class TestSceneCamera(TestCase):
                 angles[i] = np.random.uniform(low=-80, high=80, size=1)
 
                 scene_object.set_euler_angles(angles)
-                img_render = renderer.render_image(0, apply_distortion=True)
+                img_render = renderer.render(0, apply_distortion=True)
                 img_1 = (cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY) != 51).astype(np.uint8)
                 img_2 = renderer.raycast_scene(0)["object_ids"] + 1
                 assert(self.iou(img_1, img_2) > iou_threshold)
@@ -34,7 +34,7 @@ class TestSceneCamera(TestCase):
             for _ in range(5):
                 angles = np.random.uniform(low=-50, high=50, size=3)
                 scene_object.set_euler_angles(angles)
-                img_render = renderer.render_image(0, apply_distortion=True)
+                img_render = renderer.render(0, apply_distortion=True)
                 img_1 = (cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY) != 51).astype(np.uint8)
                 img_2 = renderer.raycast_scene(0)["object_ids"] + 1
                 assert(self.iou(img_1, img_2) > iou_threshold)
@@ -52,7 +52,7 @@ class TestSceneCamera(TestCase):
                 renderer.set_camera_position(0, camera_pos)
                 renderer.set_camera_lookpos(0, lookpos, np.array([0.0, 1.0, 0.0]))
 
-                img_render = renderer.render_image(0, apply_distortion=True)
+                img_render = renderer.render(0, apply_distortion=True)
                 img_1 = (cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY) != 51).astype(np.uint8)
                 img_2 = renderer.raycast_scene(0)["object_ids"] + 1
                 assert(self.iou(img_1, img_2) > iou_threshold)

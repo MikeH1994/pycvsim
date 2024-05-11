@@ -14,19 +14,33 @@ class Open3DRenderer(BaseRenderer):
     def __init__(self, cameras: List[SceneCamera] = None, objects: List[SceneObject] = None):
         super().__init__(cameras=cameras, objects=objects)
 
-    def render_image(self, camera_index, apply_distortion=True, n_samples=32, mask=None, return_as_8_bit=True,
-                     apply_noise=True, background_colour=np.array([51, 51, 51])):
+    def _render_(self, camera: SceneCamera, n_samples=32, mask=None, return_as_8_bit=True,
+                 background_colour=np.array([51.0, 51.0, 51.0])):
+        """
+
+        :param camera:
+        :param n_samples:
+        :param mask:
+        :param return_as_8_bit:
+        :param background_colour:
+        :return:
+        """
         n_samples = int(round(math.sqrt(n_samples))**2)
         background_colour = np.array(background_colour)
-        if camera_index >= len(self.cameras):
-            raise Exception("Camera index {} is out of bounds".format(camera_index))
-        camera = self.cameras[camera_index]
+
+        safe_zone = camera.safe_zone
+        xres, yres = camera.get_res(include_safe_zone=True)
         if mask is None:
-            mask = np.ones((camera.yres, camera.xres), dtype=np.uint8)
+            mask = np.ones((yres, xres), dtype=np.uint8)
+        elif camera.safe_zone > 0:
+            mask_padded = np.zeros((yres, xres), dtype=np.uint8)
+            mask_padded[safe_zone:-safe_zone, safe_zone:-safe_zone] = mask
+            mask = mask_padded
+
         raycasting_scene = o3d.t.geometry.RaycastingScene()
         for obj in self.objects:
             raycasting_scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(obj.mesh()))
-        dst_image = np.full((camera.yres, camera.xres, 3), fill_value=background_colour, dtype=np.float32)
+        dst_image = np.full((yres, xres, 3), fill_value=background_colour, dtype=np.float32)
         y_pixels, x_pixels = np.where(mask == 1)
         i = 0
         k = 0.1
@@ -36,28 +50,37 @@ class Open3DRenderer(BaseRenderer):
 
             y_pixels_i = y_pixels[i:i+max_elems]
             x_pixels_i = x_pixels[i:i+max_elems]
-            try:
-                samples = self.render_samples(raycasting_scene, camera, x_pixels_i, y_pixels_i, n_samples=n_samples,
-                                              apply_distortion=apply_distortion, background_colour=background_colour)
-                dst_image[y_pixels_i, x_pixels_i, :] = samples
-                i += max_elems
-            except Exception:
-                print("Open3D rendering buffer failed, reducing number of elements...")
-                k /= 2
-        if apply_noise and camera.noise_model is not None:
-            dst_image = camera.noise_model.apply(dst_image)
+            #try:
+            samples = self.render_samples(raycasting_scene, camera, x_pixels_i - safe_zone, y_pixels_i - safe_zone,
+                                          n_samples=n_samples, background_colour=background_colour)
+            dst_image[y_pixels_i, x_pixels_i, :] = samples
+            i += max_elems
+            #except Exception:
+            #    print("Open3D rendering buffer failed, reducing number of elements...")
+            #    k /= 2
+
         if return_as_8_bit:
             return dst_image.astype(np.uint8)
         return dst_image
 
     def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: SceneCamera,
-                       x_indices: NDArray, y_indices: NDArray, n_samples=1, apply_distortion: bool = True,
+                       x_indices: NDArray, y_indices: NDArray, n_samples=1,
                        background_colour: NDArray = np.array([51.0, 51.0, 51.0])):
+        """
+
+        :param raycasting_scene:
+        :param camera:
+        :param x_indices:
+        :param y_indices:
+        :param n_samples:
+        :param background_colour:
+        :return:
+        """
         pixels = np.zeros((x_indices.shape[0], n_samples, 2), dtype=np.float32)
         pixels[:, :, 0] = x_indices.reshape(-1, 1)
         pixels[:, :, 1] = y_indices.reshape(-1, 1)
         pixels += self.get_multisample_pattern(n_samples)
-        rays = camera.generate_rays(apply_distortion=apply_distortion, pixel_coords=pixels)
+        rays = camera.generate_rays(apply_distortion=False, pixel_coords=pixels)
         ans = raycasting_scene.cast_rays(o3d.core.Tensor(rays))
 
         object_ids = ans["geometry_ids"].numpy()
@@ -82,6 +105,11 @@ class Open3DRenderer(BaseRenderer):
         return samples
 
     def get_multisample_pattern(self, n_samples: int = 1):
+        """
+
+        :param n_samples:
+        :return:
+        """
         assert(math.sqrt(n_samples)**2 == n_samples)
         n_samples = int(round(math.sqrt(n_samples))**2)
         sqrt_samples = int(math.sqrt(n_samples))

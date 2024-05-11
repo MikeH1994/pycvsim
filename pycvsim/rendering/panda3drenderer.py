@@ -35,15 +35,11 @@ class Panda3DRenderer(BaseRenderer):
         up = LPoint3f(up[0], up[1], up[2])
         self.renderer.camera.lookAt(pos, up)
 
-    def render_image(self, camera_index, apply_distortion=True, apply_noise=True, n_samples=32,
-                     antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True):
-        if camera_index >= len(self.cameras):
-            raise Exception("Camera index {} is out of bounds".format(camera_index))
-        camera = self.cameras[camera_index]
-        self.set_render_camera_fov(*camera.get_fov(include_safe_zone=apply_distortion))
+    def _render_(self, camera: SceneCamera, n_samples=32, antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True):
+        self.set_render_camera_fov(*camera.get_fov(include_safe_zone=True))
         self.set_render_camera_position(camera.pos)
         self.set_render_camera_lookpos(camera.get_lookpos(), camera.get_up())
-        xres, yres = camera.get_res(include_safe_zone=apply_distortion)
+        xres, yres = camera.get_res(include_safe_zone=True)
 
         dtype = np.uint8 if return_as_8_bit else np.float32
         window, bgr_tex = self.get_texture_buffer(xres, yres, n_samples, dtype=dtype)
@@ -60,13 +56,7 @@ class Panda3DRenderer(BaseRenderer):
         if dtype == np.float32:
             img *= 255.0
 
-        if apply_distortion:
-            img = camera.distortion_model.distort_image(img)
-
         self.renderer.graphicsEngine.removeWindow(self.renderer.graphicsEngine.windows[1])
-
-        if apply_noise and camera.noise_model is not None:
-            img = camera.noise_model.apply(img)
 
         return img
 

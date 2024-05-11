@@ -26,7 +26,7 @@ renderer = Panda3DRenderer(cameras=cameras)
 renderer.add_object(obj_mesh)
 for i in range(100):
     start = time.time()
-    renderer.render_image(0)
+    renderer.render(0)
     end = time.time()
     print("time taken = {:.3f}s".format(end-start))
     print(len(renderer.graphicsEngine.windows))

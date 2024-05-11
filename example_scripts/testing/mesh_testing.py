@@ -24,7 +24,7 @@ while True:
     for theta in np.linspace(-180, 180, 20):
         angles = np.array([0.0, theta, 0.0])
         obj_mesh.set_euler_angles(angles)
-        img_1 = renderer.render_image(0)
+        img_1 = renderer.render(0)
         plt.imshow(img_1)
         plt.show()
         """

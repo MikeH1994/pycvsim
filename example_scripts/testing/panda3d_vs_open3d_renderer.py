@@ -17,8 +17,8 @@ panda3d_renderer = Panda3DRenderer(cameras=cameras, objects=[mesh])
 
 mesh.set_euler_angles([0, 0, -38])
 image_points = o3d_renderer.cameras[0].get_pixel_point_lies_in(mesh.get_boundary_region())
-img_1 = o3d_renderer.render_image(0, n_samples=32)
-img_2 = panda3d_renderer.render_image(0, n_samples=32, antialiasing=panda3d.core.AntialiasAttrib.MNone)
+img_1 = o3d_renderer.render(0, n_samples=32)
+img_2 = panda3d_renderer.render(0, n_samples=32, antialiasing=panda3d.core.AntialiasAttrib.MNone)
 
 plt.imshow(img_1)
 plt.figure()

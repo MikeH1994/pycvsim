@@ -69,8 +69,8 @@ class StereoRoutine:
                                                                self.R2, self.P2, self.image_size, cv2.CV_32F)
 
     def get_images(self):
-        image_1 = self.renderer.render_image(0, n_samples=1)
-        image_2 = self.renderer.render_image(1, n_samples=1)
+        image_1 = self.renderer.render(0, n_samples=1)
+        image_2 = self.renderer.render(1, n_samples=1)
         image_1 = cv2.remap(image_1, self.map_x1, self.map_y1, cv2.INTER_LINEAR)
         image_2 = cv2.remap(image_2, self.map_x2, self.map_y2, cv2.INTER_LINEAR)
         return image_1, image_2

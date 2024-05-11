@@ -27,7 +27,7 @@ renderer.add_object(obj_mesh)
 
 while True:
     for i in range(len(cameras)):
-        img_1 = renderer.render_image(i)
+        img_1 = renderer.render(i)
         plt.figure()
         plt.imshow(img_1)
         plt.figure()
