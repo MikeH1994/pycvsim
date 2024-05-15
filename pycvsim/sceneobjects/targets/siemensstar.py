@@ -15,6 +15,7 @@ class SiemensStar(CalibrationTarget):
     @staticmethod
     def create_target(radius: float, n_spokes: int, colour_1: NDArray = np.array([255.0, 255.0, 255.0]),
                       colour_2: NDArray = np.array([0.0, 0.0, 0.0]), center: NDArray = np.zeros(3)):
+        n_spokes *= 2
         theta = np.linspace(0, 2 * np.pi, n_spokes + 1)
         mesh = None
         boundary_points = np.array([[-radius, -radius, 0.0], [-radius, radius, 0.0],
@@ -27,7 +28,7 @@ class SiemensStar(CalibrationTarget):
             else:
                 mesh += mesh_i
 
-        object_points = np.full((n_spokes+1, 3), fill_value=center)
-        object_points[1:, 0] += radius * np.cos(theta)[:-1]
-        object_points[1:, 1] += radius * np.sin(theta)[:-1]
+        object_points = np.full((n_spokes, 3), fill_value=center)
+        object_points[:, 0] += radius * np.cos(theta)[:-1]
+        object_points[:, 1] += radius * np.sin(theta)[:-1]
         return mesh, object_points, boundary_points
