@@ -50,14 +50,14 @@ class Open3DRenderer(BaseRenderer):
 
             y_pixels_i = y_pixels[i:i+max_elems]
             x_pixels_i = x_pixels[i:i+max_elems]
-            #try:
-            samples = self.render_samples(raycasting_scene, camera, x_pixels_i - safe_zone, y_pixels_i - safe_zone,
-                                          n_samples=n_samples, background_colour=background_colour)
-            dst_image[y_pixels_i, x_pixels_i, :] = samples
-            i += max_elems
-            #except Exception:
-            #    print("Open3D rendering buffer failed, reducing number of elements...")
-            #    k /= 2
+            try:
+                samples = self.render_samples(raycasting_scene, camera, x_pixels_i - safe_zone, y_pixels_i - safe_zone,
+                                              n_samples=n_samples, background_colour=background_colour)
+                dst_image[y_pixels_i, x_pixels_i, :] = samples
+                i += max_elems
+            except Exception:
+                print("Open3D rendering buffer failed, reducing number of elements...")
+                k /= 2
 
         if return_as_8_bit:
             return dst_image.astype(np.uint8)

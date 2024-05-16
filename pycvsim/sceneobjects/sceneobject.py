@@ -36,7 +36,8 @@ class SceneObject:
         self.node_path.setPos(*pos)
 
     def get_pos(self):
-        return self.node_path.get_pos()
+        pos = np.array(self.node_path.get_pos())
+        return pos
 
     def set_euler_angles(self, angles: NDArray, mode="absolute"):
         assert(mode == "absolute" or mode == "relative")
