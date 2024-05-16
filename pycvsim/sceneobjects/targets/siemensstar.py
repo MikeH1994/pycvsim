@@ -10,6 +10,7 @@ class SiemensStar(CalibrationTarget):
     def __init__(self, radius = 0.1, n_spokes = 30, colour_1: NDArray = np.array([255.0, 255.0, 255.0]),
                  colour_2: NDArray = np.array([0.0, 0.0, 0.0])):
         mesh, obj_points, obj_boundary = SiemensStar.create_target(radius, n_spokes, colour_1, colour_2)
+        self.n_spokes = n_spokes
         super().__init__(mesh, obj_points, obj_boundary, "Siemens Star")
 
     @staticmethod

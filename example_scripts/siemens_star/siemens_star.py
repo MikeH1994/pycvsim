@@ -8,7 +8,7 @@ from pycvsim.routines.knifeedge.knifeedgeroutine import KnifeEdgeRoutine
 import matplotlib.pyplot as plt
 from pycvsim.routines.siemensstar import SiemensStarRoutine, SiemensStar
 
-camera = SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(2000, 2000), hfov=35.0)
+camera = SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=35.0)
 target = SiemensStar(radius=1, n_spokes=10)
 routine = SiemensStarRoutine(camera, target)
 routine.run()
