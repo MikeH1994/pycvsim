@@ -33,9 +33,12 @@ class KnifeEdgeRoutine:
         cv2.line(mask, (int(p0[0]), int(p0[1])), (int(p1[0]), int(p1[1])), 1, thickness=6)
 
         image = self.renderer.render(camera_index=0, n_samples=1, return_as_8_bit=False)
-        image[mask > 0] = self.renderer.render(camera_index=0, n_samples=50 ** 2, mask=mask, return_as_8_bit=False)[mask > 0]
+        image[mask > 0] = self.renderer.render(camera_index=0, n_samples=100 ** 2, mask=mask, return_as_8_bit=False)[mask > 0]
 
         edge = Edge(image, p0, p1)
         esf_x, esf_f = edge.get_edge_profile(normalise=False, search_region=4)
+
+        plt.imshow(image[:, :, 0])
+        plt.figure()
         plt.scatter(esf_x, esf_f)
         plt.show()

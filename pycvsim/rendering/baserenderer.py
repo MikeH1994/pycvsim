@@ -101,17 +101,17 @@ class BaseRenderer:
         if camera_index >= len(self.cameras):
             raise Exception("Camera index {} is out of bounds".format(camera_index))
         camera = self.cameras[camera_index]
-        image = self._render_(camera, **kwargs)
+        image = self._render_(camera, return_as_8_bit=return_as_8_bit, **kwargs)
 
         if apply_dof and camera.dof_model is not None:
             depth = self.raycast_scene(camera_index, apply_distortion=False)["depth"]
-            image = camera.dof_model.apply(image, depth_map=depth, focus_distance=np.percentile(depth.reshape(-1), 50.0))
+            # image = camera.dof_model.apply(image, depth_map=depth, focus_distance=np.percentile(depth.reshape(-1), 50.0))
 
         if apply_distortion:
-            image = camera.distortion_model.distort_image(image, remove_safe_zone=False)
+            pass # image = camera.distortion_model.distort_image(image, remove_safe_zone=False)
 
         if apply_noise and camera.noise_model is not None:
-            image = camera.noise_model.apply(image)
+            pass # image = camera.noise_model.apply(image)
 
         if camera.safe_zone > 0:
             safe_zone = camera.safe_zone
@@ -119,7 +119,7 @@ class BaseRenderer:
 
         return image
 
-    def _render_(self, camera: SceneCamera, **kwargs) -> NDArray:
+    def _render_(self, camera: SceneCamera, return_as_8_bit=True, **kwargs) -> NDArray:
         """
         The base function for the renderer to implement. Returns a 3 channel floating point image, of the
         shape (h, w, 3), where all values lie within the range [0, 1]

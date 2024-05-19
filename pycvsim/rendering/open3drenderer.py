@@ -104,26 +104,30 @@ class Open3DRenderer(BaseRenderer):
         samples = np.mean(samples, axis=-2)
         return samples
 
-    def get_multisample_pattern(self, n_samples: int = 1):
+    def get_multisample_pattern(self, n_samples: int = 1, fixed_pattern: bool = True):
         """
 
         :param n_samples:
         :return:
         """
-        assert(math.sqrt(n_samples)**2 == n_samples)
-        n_samples = int(round(math.sqrt(n_samples))**2)
-        sqrt_samples = int(math.sqrt(n_samples))
 
-        pad_horizontal = 2 if sqrt_samples < 50 else 0
-        pad_middle = 1 if sqrt_samples % 2 == 0 else 0
-        x = np.linspace(-0.5, 0.5, sqrt_samples + pad_horizontal + pad_middle)
-        if pad_horizontal > 0:
-            x = x[1:-1]
-        if pad_middle > 0:
-            x = np.delete(x, sqrt_samples // 2)
+        if fixed_pattern:
+            assert(math.sqrt(n_samples)**2 == n_samples)
+            sqrt_samples = int(math.sqrt(n_samples))
 
-        xx, yy = np.meshgrid(x, x)
-        multisamples = np.zeros((n_samples, 2), dtype=np.float32)
-        multisamples[:, 0] = xx.reshape(-1)
-        multisamples[:, 1] = yy.reshape(-1)
-        return multisamples
+            pad_horizontal = 2 if sqrt_samples < 50 else 0
+            pad_middle = 1 if sqrt_samples % 2 == 0 else 0
+            x = np.linspace(-0.5, 0.5, sqrt_samples + pad_horizontal + pad_middle)
+            if pad_horizontal > 0:
+                x = x[1:-1]
+            if pad_middle > 0:
+                x = np.delete(x, sqrt_samples // 2)
+
+            xx, yy = np.meshgrid(x, x)
+            multisamples = np.zeros((n_samples, 2), dtype=np.float32)
+            multisamples[:, 0] = xx.reshape(-1)
+            multisamples[:, 1] = yy.reshape(-1)
+            return multisamples
+        else:
+            multisamples = np.random.uniform(-0.5, 0.5, (n_samples, 2))
+            return multisamples
