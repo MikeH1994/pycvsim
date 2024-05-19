@@ -19,7 +19,8 @@ class Edge:
         self.min_x, self.max_x = min(self.x0, self.x1), max(self.x0, self.x1)
         self.min_y, self.max_y = min(self.y0, self.y1), max(self.y0, self.y1)
         self.image = image
-        self.m = (self.y1 - self.y0) / (self.x1 - self.x0)
+        self.inf_gradient = self.x1 == self.x0
+        self.m = (self.y1 - self.y0) / (self.x1 - self.x0) if not self.inf_gradient else np.inf
         self.c = self.y0 - self.x0*self.m
         self.angle = self.gradient_to_angle(self.m)
         self.is_vertical = self.gradient_is_vertical(self.m)
@@ -37,8 +38,10 @@ class Edge:
         :param y:
         :return:
         """
-
-        return (y - self.m * x - self.c) / np.sqrt(self.m ** 2 + 1)
+        if self.inf_gradient:
+            return x - self.x0
+        else:
+            return (y - (self.m * x + self.c)) / np.sqrt(self.m ** 2 + 1)
 
     # noinspection PyMethodMayBeStatic
     def gradient_to_angle(self, m: float):
@@ -75,7 +78,7 @@ class Edge:
         height, width = self.image.shape[:2]
         image = self.image
         if len(image.shape) == 3:
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+            image = np.mean(self.image, axis=-1)
         image = image.astype(np.float32)
 
         esf_x = []
@@ -109,7 +112,7 @@ class Edge:
 
     def get_edge_x(self, y):
         # y = mx + c, therefore, x = (y - c)/m
-        return (y - self.c) / self.m
+        return (y - self.c) / self.m if not self.inf_gradient else self.x0
 
     def get_edge_y(self, x):
         return self.m * x + self.c
