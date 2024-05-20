@@ -115,7 +115,7 @@ class Open3DRenderer(BaseRenderer):
             assert(math.sqrt(n_samples)**2 == n_samples)
             sqrt_samples = int(math.sqrt(n_samples))
 
-            pad_horizontal = 2 if sqrt_samples < 50 else 0
+            pad_horizontal = 0 # 2 if sqrt_samples < 10000000 else 0
             pad_middle = 1 if sqrt_samples % 2 == 0 else 0
             x = np.linspace(-0.5, 0.5, sqrt_samples + pad_horizontal + pad_middle)
             if pad_horizontal > 0:
