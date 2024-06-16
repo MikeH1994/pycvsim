@@ -1,11 +1,7 @@
 import numpy as np
-from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
-from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.core.image_utils import overlay_points_on_image
-from pycvsim.core.pinhole_camera_maths import focal_length_to_fov, fov_to_focal_length, calc_closest_y_direction
+from pycvsim.core.pinhole_camera_maths import focal_length_to_fov, calc_closest_y_direction
 from scipy.optimize import minimize
-import matplotlib.pyplot as plt
 import open3d as o3d
 
 def run():

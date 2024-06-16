@@ -1,8 +1,7 @@
 import numpy as np
-from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
+from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.core.image_utils import overlay_points_on_image
 import matplotlib.pyplot as plt
 
 mesh = CheckerbordTarget((9, 8), (0.05, 0.05), board_thickness=0.02, color_bkg=(128, 0, 0), board_boundary=0.05)

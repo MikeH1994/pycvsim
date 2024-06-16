@@ -1,10 +1,6 @@
 import numpy as np
-from pycvsim.sceneobjects.targets.knifeedgetarget import KnifeEdgeTarget
-from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.core.image_utils import overlay_points_on_image
-from pycvsim.routines.knifeedge.knifeedgeroutine import KnifeEdgeRoutine
+from pycvsim.routines.slantededge.slantededgeroutine import SlantedEdgeRoutine
 import matplotlib.pyplot as plt
 import scipy.stats as st
 
@@ -19,7 +15,7 @@ def gkern(kernlen=5, nsig=1):
 blurring_kernel = gkern()
 camera = SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
 
-routine = KnifeEdgeRoutine(camera, angle=5.0)
+routine = SlantedEdgeRoutine(camera, angle=5.0)
 esf_x, esf_f, image = routine.run(normalize=False)
 
 esf_x_blurred, esf_f_blurred, _ = routine.run(blurring_kernel=blurring_kernel, normalize=False)
@@ -31,8 +27,8 @@ plt.ylabel("Intensity")
 plt.legend(loc=0)
 plt.figure()
 
-esf_x_5, esf_f_5, _ = KnifeEdgeRoutine(camera, angle=5.0).run(blurring_kernel=blurring_kernel, normalize=False)
-esf_x_45, esf_f_45, _ = KnifeEdgeRoutine(camera, angle=44.0).run(blurring_kernel=blurring_kernel, normalize=False)
+esf_x_5, esf_f_5, _ = SlantedEdgeRoutine(camera, angle=5.0).run(blurring_kernel=blurring_kernel, normalize=False)
+esf_x_45, esf_f_45, _ = SlantedEdgeRoutine(camera, angle=44.0).run(blurring_kernel=blurring_kernel, normalize=False)
 plt.title("Edge profile at different angles")
 plt.plot(esf_x_5*np.cos(np.radians(5)), esf_f_5/255.0, label="5 degrees, with gaussian psf")
 plt.plot(esf_x_45*np.cos(np.radians(44)), esf_f_45/255.0, label="44 degrees, with gaussian psf")

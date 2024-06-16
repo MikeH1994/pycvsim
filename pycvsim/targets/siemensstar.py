@@ -1,9 +1,7 @@
-from pycvsim.sceneobjects.targets.calibrationtarget import CalibrationTarget
-import open3d as o3d
+from pycvsim.targets.calibrationtarget import CalibrationTarget
 import numpy as np
 from numpy.typing import NDArray
-from typing import Tuple
-from pycvsim.sceneobjects.targets.utils import create_sector_of_circle
+from pycvsim.targets.utils import create_sector_of_circle
 
 
 class SiemensStar(CalibrationTarget):

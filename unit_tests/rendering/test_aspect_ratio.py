@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from pycvsim.rendering.scenecamera import SceneCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
-from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
+from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 
 
 class TestSceneCamera(TestCase):
