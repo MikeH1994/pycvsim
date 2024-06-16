@@ -104,7 +104,9 @@ class Open3DRenderer(BaseRenderer):
         samples = np.mean(samples, axis=-2)
         return samples
 
-    def get_multisample_pattern(self, n_samples: int = 1, fixed_pattern: bool = True):
+
+    @staticmethod
+    def get_multisample_pattern(n_samples: int = 1, fixed_pattern: bool = True):
         """
 
         :param n_samples:
