@@ -1,9 +1,7 @@
 import numpy as np
-from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
-from pycvsim.rendering.open3drenderer import Open3DRenderer
+from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.core.image_utils import overlay_points_on_image
 from pycvsim.optics.noisemodel import NoiseModel
 import matplotlib.pyplot as plt
 

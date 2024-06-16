@@ -4,8 +4,7 @@ import numpy as np
 from pycvsim.rendering.scenecamera import SceneCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.open3drenderer import Open3DRenderer
-from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
-from pycvsim.core.image_utils import overlay_points_on_image
+from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 import matplotlib.pyplot as plt
 
 board_size = (7, 6)

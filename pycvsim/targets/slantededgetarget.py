@@ -3,13 +3,12 @@ import open3d as o3d
 from numpy.typing import NDArray
 import numpy as np
 from typing import Tuple
-from pycvsim.sceneobjects.targets.utils import transform_object_points
-import matplotlib.pyplot as plt
+from pycvsim.targets.utils import transform_object_points
 
 
-class KnifeEdgeTarget(SceneObject):
+class SlantedEdgeTarget(SceneObject):
     def __init__(self, width, angle=5.0, name=""):
-        mesh, points = KnifeEdgeTarget.create(width, angle)
+        mesh, points = SlantedEdgeTarget.create(width, angle)
         self.edge_points = points
         super().__init__(mesh, name)
 

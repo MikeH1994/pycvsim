@@ -1,20 +1,12 @@
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.open3drenderer import Open3DRenderer
-from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.sceneobjects.targets.siemensstar import SiemensStar
-import pycvsim.routines.stereophotogrammetry.utils as utils
-import cv2
-from typing import Tuple
+from pycvsim.targets.siemensstar import SiemensStar
 from scipy import signal
-from scipy.signal import argrelextrema
 from scipy.signal import savgol_filter
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import open3d as o3d
 import scipy.spatial.transform
-from numpy.typing import NDArray
 import scipy.interpolate
 
 

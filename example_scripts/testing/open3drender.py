@@ -1,5 +1,5 @@
 import numpy as np
-from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
+from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera

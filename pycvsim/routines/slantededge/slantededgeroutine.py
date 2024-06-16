@@ -1,25 +1,21 @@
 import numpy as np
 from numpy.typing import NDArray
-import matplotlib.pyplot as plt
 from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.open3drenderer import Open3DRenderer
-from pycvsim.sceneobjects.targets.knifeedgetarget import KnifeEdgeTarget
-from pycvsim.core.image_utils import overlay_points_on_image
-from pycvsim.routines.knifeedge.edge import Edge
-import panda3d
-import panda3d.core
+from pycvsim.targets.slantededgetarget import SlantedEdgeTarget
+from pycvsim.routines.slantededge.edge import Edge
 import cv2
 import scipy.ndimage
 
-class KnifeEdgeRoutine:
+
+class SlantedEdgeRoutine:
     camera: SceneCamera
     angle: float
 
     def __init__(self, camera: SceneCamera, angle: float = 8.4):
         self.camera = camera
         self.angle = angle
-        self.target = KnifeEdgeTarget(0.8, angle=angle)
+        self.target = SlantedEdgeTarget(0.8, angle=angle)
         self.renderer = Open3DRenderer(cameras=[self.camera], objects=[self.target])
 
 

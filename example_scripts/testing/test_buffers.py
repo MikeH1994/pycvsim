@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from pycvsim.sceneobjects.targets.checkerboardtarget import CheckerbordTarget
+from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.scenecamera import SceneCamera
