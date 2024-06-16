@@ -10,6 +10,7 @@ from pycvsim.routines.knifeedge.edge import Edge
 import panda3d
 import panda3d.core
 import cv2
+import scipy.ndimage
 
 class KnifeEdgeRoutine:
     camera: SceneCamera
@@ -22,7 +23,7 @@ class KnifeEdgeRoutine:
         self.renderer = Open3DRenderer(cameras=[self.camera], objects=[self.target])
 
 
-    def run(self):
+    def run(self, blurring_kernel: NDArray = None, normalize=True):
         # compute the edge points
         edge_object_points = self.target.get_edge_points()
         edge_image_points = self.camera.get_pixel_point_lies_in(edge_object_points)
@@ -34,11 +35,12 @@ class KnifeEdgeRoutine:
 
         image = self.renderer.render(camera_index=0, n_samples=1, return_as_8_bit=False)
         image[mask > 0] = self.renderer.render(camera_index=0, n_samples=100 ** 2, mask=mask, return_as_8_bit=False)[mask > 0]
+        image = np.mean(image, axis=-1)
 
+        if blurring_kernel is not None:
+            image = scipy.ndimage.convolve(image, blurring_kernel)
         edge = Edge(image, p0, p1)
-        esf_x, esf_f = edge.get_edge_profile(normalise=False, search_region=4)
-
-        plt.imshow(image[:, :, 0])
-        plt.figure()
-        plt.scatter(esf_x, esf_f)
-        plt.show()
+        search_region = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
+        safe_zone = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
+        esf_x, esf_f = edge.get_edge_profile(normalise=normalize, search_region=search_region, safe_zone=safe_zone)
+        return esf_x, esf_f, image

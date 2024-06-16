@@ -8,6 +8,14 @@ import cv2
 from typing import Union, List, Tuple
 
 
+def clamp(a, min_val, max_val):
+    if a < min_val:
+        return int(min_val)
+    if a > max_val:
+        return int(max_val)
+    return int(a)
+
+
 class Edge:
     def __init__(self, image: NDArray, p0: NDArray, p1: NDArray):
         if p0[0] < p1[0]:
@@ -24,6 +32,7 @@ class Edge:
         self.c = self.y0 - self.x0*self.m
         self.angle = self.gradient_to_angle(self.m)
         self.is_vertical = self.gradient_is_vertical(self.m)
+        print("Created edge with angle {}".format(self.angle))
 
     def distance_to_edge(self, x: float, y: float):
         """
@@ -74,7 +83,7 @@ class Edge:
         return esf_x, esf_f
 
     # noinspection PyMethodMayBeStatic
-    def get_edge_profile(self, boundary: int = 10, search_region: int = 10, normalise=True):
+    def get_edge_profile(self, boundary: int = 10, search_region: int = 10, safe_zone=5, normalise=True):
         height, width = self.image.shape[:2]
         image = self.image
         if len(image.shape) == 3:
@@ -84,19 +93,19 @@ class Edge:
         esf_x = []
         esf_f = []
         if self.is_vertical:
-            y0, y1 = int(self.min_y+boundary), int(self.max_y-boundary)
-            for y in range(y0, y1+1):
+            y0, y1 = clamp(self.min_y+boundary, 0, height-2), clamp(self.max_y-boundary, 0, height-2)
+            for y in range(y0+safe_zone, y1+1-safe_zone):
                 x_edge = self.get_edge_x(y)
-                x0, x1 = int(max(x_edge - search_region, 0)), int(min(x_edge + search_region, width-1))
+                x0, x1 = clamp(x_edge - search_region, 0, width-2), clamp(x_edge + search_region, 0, width-2)
                 for x in range(x0, x1+1):
                     dx = self.distance_to_edge(x, y)
                     esf_x.append(dx)
                     esf_f.append(float(image[y][x]))
         else:
-            x0, x1 = int(self.min_x+boundary), int(self.max_x-boundary)
-            for x in range(x0, x1+1):
+            x0, x1 = clamp(self.min_x+boundary, 0, width-2), clamp(self.max_x-boundary, 0, width-2)
+            for x in range(x0+safe_zone, x1+1-safe_zone):
                 y_edge = self.get_edge_y(x)
-                y0, y1 = int(max(y_edge - search_region, 0)), int(min(y_edge + search_region, height-1))
+                y0, y1 = clamp(y_edge - search_region, 0, height-2), clamp(y_edge + search_region, 0, height-2)
                 for y in range(y0, y1+1):
                     dx = self.distance_to_edge(x, y)
                     esf_x.append(dx)
@@ -108,6 +117,14 @@ class Edge:
 
         if normalise:
             esf_x, esf_f = self.normalise_data(esf_x, esf_f)
+
+        angle = np.remainder(self.angle, 90)
+        if angle < 0.0:
+            angle += 90.0
+        if angle > 45.0:
+            angle = 90 - angle
+        scale_factor = np.cos(np.radians(angle))
+        esf_x *= scale_factor
         return esf_x, esf_f
 
     def get_edge_x(self, y):
