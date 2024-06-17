@@ -18,8 +18,7 @@ class SlantedEdgeRoutine:
         self.target = SlantedEdgeTarget(0.8, angle=angle)
         self.renderer = Open3DRenderer(cameras=[self.camera], objects=[self.target])
 
-
-    def run(self, blurring_kernel: NDArray = None, normalize=True):
+    def generate_image(self):
         # compute the edge points
         edge_object_points = self.target.get_edge_points()
         edge_image_points = self.camera.get_pixel_point_lies_in(edge_object_points)
@@ -31,6 +30,12 @@ class SlantedEdgeRoutine:
 
         image = self.renderer.render(camera_index=0, n_samples=1, return_as_8_bit=False)
         image[mask > 0] = self.renderer.render(camera_index=0, n_samples=100 ** 2, mask=mask, return_as_8_bit=False)[mask > 0]
+
+        return image, p0, p1
+
+    def run(self, blurring_kernel: NDArray = None, normalize=True):
+
+        image, p0, p1 = self.generate_image()
         image = np.mean(image, axis=-1)
 
         if blurring_kernel is not None:
