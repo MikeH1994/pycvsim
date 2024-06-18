@@ -3,7 +3,9 @@ from numpy.typing import NDArray
 from pycvsim.rendering.scenecamera import SceneCamera
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.targets.slantededgetarget import SlantedEdgeTarget
-from pycvsim.routines.slantededge.edge import Edge
+from pycvsim.algorithms.esf.edge import Edge
+from pycvsim.algorithms.esf.esf import ESF
+from pycvsim.algorithms.esf.gaussianesf import GaussianESF
 import cv2
 import scipy.ndimage
 
@@ -40,8 +42,10 @@ class SlantedEdgeRoutine:
 
         if blurring_kernel is not None:
             image = scipy.ndimage.convolve(image, blurring_kernel)
-        edge = Edge(image, p0, p1)
         search_region = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
         safe_zone = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
-        esf_x, esf_f = edge.get_edge_profile(normalise=normalize, search_region=search_region, safe_zone=safe_zone)
+        edge = Edge(p0, p1)
+        esf = GaussianESF(image, edge)
+
+        esf_x, esf_f = esf.esf_x, esf.esf_f
         return esf_x, esf_f, image
