@@ -36,23 +36,24 @@ class Edge:
             if self.x0 > self.x1:
                 self.x0, self.y0, self.x1, self.y1 = self.x1, self.y1, self.x0, self.y0
 
-    def get_bounds(self, width, height, return_as_int = False):
+    def get_bounds(self, min_x: float = None, min_y: float = None, max_x: float = None, max_y: float = None,
+                   return_as_int: bool = False):
         x0, y0, x1, y1 = self.x0, self.y0, self.x1, self.y1
         if self.is_vertical:
             assert(y0 <= y1)
-            if y0 < 0.0:
-                y0 = 0.0
+            if min_y is not None and y0 < min_y:
+                y0 = min_y
                 x0 = self.get_edge_x(self.y0)
-            if y1 > height - 1.0:
-                y1 = height - 1.0
+            if max_y is not None and y1 > max_y:
+                y1 = max_y
                 x1 = self.get_edge_x(self.y1)
         else:
             assert(x0 <= x1)
-            if x0 < 0.0:
+            if min_x is not None and x0 < min_x:
                 x0 = 0.0
                 y0 = self.get_edge_y(x0)
-            if x1 > width - 1.0:
-                x1 = width - 1.0
+            if max_x is not None and x1 > max_x:
+                x1 = max_x
                 y1 = self.get_edge_y(x1)
         if return_as_int:
             return int(x0), int(y0), int(x1), int(y1)

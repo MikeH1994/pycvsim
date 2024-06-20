@@ -8,16 +8,17 @@ from pycvsim.algorithms.esf.esf import ESF
 from pycvsim.algorithms.esf.gaussianesf import GaussianESF
 import cv2
 import scipy.ndimage
+import matplotlib.pyplot as plt
 
 
 class SlantedEdgeRoutine:
     camera: SceneCamera
     angle: float
 
-    def __init__(self, camera: SceneCamera, angle: float = 8.4):
+    def __init__(self, camera: SceneCamera, angle: float = 5.0):
         self.camera = camera
         self.angle = angle
-        self.target = SlantedEdgeTarget(0.8, angle=angle)
+        self.target = SlantedEdgeTarget(5.0, angle=angle)
         self.renderer = Open3DRenderer(cameras=[self.camera], objects=[self.target])
 
     def generate_image(self):
@@ -35,17 +36,18 @@ class SlantedEdgeRoutine:
 
         return image, p0, p1
 
-    def run(self, blurring_kernel: NDArray = None, normalize=True):
-
+    def run(self, normalize=True,  convert_to_8_bit=False, apply_gaussian=False):
         image, p0, p1 = self.generate_image()
         image = np.mean(image, axis=-1)
 
-        if blurring_kernel is not None:
-            image = scipy.ndimage.convolve(image, blurring_kernel)
-        search_region = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
-        safe_zone = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
-        edge = Edge(p0, p1)
-        esf = GaussianESF(image, edge)
+        if convert_to_8_bit:
+            image = image.astype(np.uint8)
 
+        if apply_gaussian:
+            image = cv2.GaussianBlur(image, (9, 9), 0)  # scipy.ndimage.gaussian_filter(image, 0.2)
+
+        edge = Edge(p0, p1)
+        esf = GaussianESF(image, edge, boundary_region=50, search_region=30)
+        lsf = GaussianLSF()
         esf_x, esf_f = esf.esf_x, esf.esf_f
         return esf_x, esf_f, image

@@ -17,16 +17,15 @@ class ESF:
     edge: Edge
 
     def __init__(self, img: NDArray, edge: Edge, ** kwargs):
-        self.boundary = 30
-        for param_name, value in kwargs.items():
-            if param_name == "search_region":
-                self.search_region = value
+        self.search_region = kwargs["search_region"] if "search_region" in kwargs else 30
+        self.boundary_region = kwargs["boundary_region"] if "boundary_region" in kwargs else 0
+        self.distance_mode = kwargs["distance_mode"] if "distance_mode" in kwargs else "normal"
         self.img = img.astype(np.float32)
         if len(self.img.shape) == 3:
             print("Image supplied to ESF 3 channels - taking mean of channels")
             self.img = np.mean(self.img, axis=-1)
         self.edge = edge
-        self.esf_x, self.esf_f = self.get_edge_profile(self.img, self.edge, search_region=self.boundary)
+        self.esf_x, self.esf_f = self.get_edge_profile(self.img, self.edge, search_region=self.search_region)
         self.params = self.fit(self.esf_x, self.esf_f, **kwargs)
         self.rms = self.calc_rms(self.esf_x, self.esf_f)
         self.angle = self.edge.angle
@@ -85,7 +84,9 @@ class ESF:
 
         esf_x = []
         esf_f = []
-        x0, y0, x1, y1 = edge.get_bounds(width, height, return_as_int=True)
+        x0, y0, x1, y1 = edge.get_bounds(min_x=self.boundary_region, min_y=self.boundary_region,
+                                         max_x=width-self.boundary_region-1, max_y=height-self.boundary_region-1,
+                                         return_as_int=True)
 
         if edge.is_vertical:
             for y in range(y0, y1):
