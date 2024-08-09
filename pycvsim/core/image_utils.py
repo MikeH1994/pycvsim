@@ -123,3 +123,46 @@ def resize_image(img: NDArray, dst_size: Tuple[int, int],
         return img
     else:
         raise Exception("Unknown mode -", mode)
+
+def convert_to_8_bit(src: NDArray, min_val=None, max_val=None, return_as_rgb=False):
+    # if a single image is supplied
+    if src.dtype == np.uint8:
+        if return_as_rgb and len(src.shape) == 1:
+            return cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
+        return src
+
+    min_val = np.min(src) if min_val is None else min_val
+    max_val = np.max(src) if max_val is None else max_val
+
+    if min_val > max_val:
+        raise Exception("Invalid min and max bounds found!")
+
+    if min_val == max_val:
+        scale_factor = 1.0
+    else:
+        scale_factor = 255.0 / (max_val - min_val)
+    img = src.astype(np.float32)
+    img[img < min_val] = min_val
+    img[img > max_val] = max_val
+    img -= min_val
+    img *= scale_factor
+    img = img.astype(np.uint8)
+    if return_as_rgb:
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+    return img
+
+
+def normalise_image(src, dark_img=None, img_min=None, img_max = None):
+    dst = np.copy(src)
+    if dark_img is None:
+        dark_img = np.zeros(src.shape)
+    dst -= dark_img
+    if img_min is None:
+        mid_val = (np.min(dst)+np.max(dst))/2.0
+        img_min = np.mean(dst[dst < 0.7 * mid_val])
+    if img_max is None:
+        mid_val = (np.min(dst)+np.max(dst))/2.0
+        img_max = np.mean(dst[dst > 1.3 * mid_val])
+    dst -= img_min
+    dst /= (img_max - img_min)
+    return dst

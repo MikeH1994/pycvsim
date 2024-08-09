@@ -30,8 +30,9 @@ class RadialPSF(PSF):
         dst_kernel = np.zeros((height, width))
         for j in range(height):
             for i in range(width):
-                x = i - width // 2
-                y = j - height // 2
+
+                x = i - (width-1) / 2.0
+                y = j - (height-1) / 2.0
                 value, _ = dblquad(integrand, x-0.5, x+0.5, y-0.5, y+0.5)
                 dst_kernel[j, i] = value
         dst_kernel /= np.sum(dst_kernel)

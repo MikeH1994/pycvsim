@@ -1,2 +1,2 @@
 from .lsf import LSF
-from .gaussian import GaussianLSF
+from .gaussianlsf import GaussianLSF

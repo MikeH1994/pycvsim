@@ -2,6 +2,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 from pycvsim.algorithms.esf.edge import Edge
+from pycvsim.algorithms.esf.utils import normalise_data
 from scipy.special import expit
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -110,6 +111,20 @@ class ESF:
         if normalise:
             esf_x, esf_f = ESF.normalise_data(esf_x, esf_f)
         return esf_x, esf_f
+
+    def plot(self, title=None, xlim=None, stride=1, new_figure=True, show=True):
+        x_fit = np.linspace(np.min(self.esf_x), np.max(self.esf_x), 5000)
+        y_fit = self.f(x_fit)
+        if new_figure:
+            plt.figure()
+        if title is not None:
+            plt.title(title)
+        plt.scatter(self.esf_x[::stride], self.esf_f[::stride], label="data")
+        plt.plot(x_fit, y_fit, label="fit")
+        if xlim is not None:
+            plt.xlim(xlim)
+        if show:
+            plt.show()
 
     @staticmethod
     def fn(x, *params) -> NDArray:

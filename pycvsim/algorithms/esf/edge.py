@@ -1,6 +1,9 @@
 from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
+
+from pycvsim.algorithms.esf.utils import get_edge_from_image
+
 from scipy.special import expit
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -19,6 +22,13 @@ def clamp(a, min_val, max_val):
 
 
 class Edge:
+from pycvsim.core.image_utils import convert_to_8_bit
+
+
+class Edge:
+    """
+
+    """
     def __init__(self, p0: NDArray, p1: NDArray):
         self.x0, self.y0 = p0
         self.x1, self.y1 = p1
@@ -82,8 +92,9 @@ class Edge:
         return np.degrees(np.arctan(m)) % 360.0
 
     # noinspection PyMethodMayBeStatic
-    def gradient_is_vertical(self, m: float):
-        return np.abs(m) > 1
+
+    def gradient_is_vertical(self, m: Union[float, None]):
+        return np.abs(m) > 1 if m is not None else True
 
     def get_edge_x(self, y):
         # y = mx + c, therefore, x = (y - c)/m
@@ -169,3 +180,31 @@ class Edge:
             return roots[0]
         else:
             return None
+          
+    def point_above_line(self, x, y):
+        # if line is vertical
+        if self.inf_gradient:
+            return x > self.x0
+        else:
+            y_line = self.get_edge_y(x)
+            return y < y_line
+
+    def draw(self, image: NDArray, title=None, xlim=None, new_figure=True, show=True):
+        if new_figure:
+            plt.figure()
+        if title is not None:
+            plt.title(title)
+        image = convert_to_8_bit(image)
+        plt.imshow(image)
+        plt.plot([self.x0, self.x1], [self.y0, self.y1], color='r')
+        if show:
+            plt.show()
+
+    @staticmethod
+    def create_from_image(image: NDArray, edge_detection_mode="lsf", display=False):
+        p0, p1, _, _ = get_edge_from_image(image, edge_detection_mode=edge_detection_mode, display=display)
+        return Edge(p0, p1)
+
+    @staticmethod
+    def create_from_two_points(p0: NDArray, p1: NDArray):
+        return Edge(p0, p1)

@@ -51,7 +51,7 @@ class StereoRoutine:
         P1 3x4 projection matrix in the new (rectified) coordinate systems for the first camera.
         P2 3x4 projection matrix in the new (rectified) coordinate systems for the second camera.
         Q 4x4 disparity-to-depth mapping matrix (see cv.reprojectImageTo3D).
-        roi1, roi2 rectangles inside the rectified images where all the pixels are valid [x,y,w,h]. If Alpha=0, the ROIs cover the whole images. Otherwise, they are likely to be smaller.
+        roi1, roi2 rectangles inside the rectified unit_test_images where all the pixels are valid [x,y,w,h]. If Alpha=0, the ROIs cover the whole unit_test_images. Otherwise, they are likely to be smaller.
         """
 
         self.R1, self.R2, self.P1, self.P2, self.q, _, _ = cv2.stereoRectify(self.camera_1.camera_matrix,

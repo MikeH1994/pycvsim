@@ -6,6 +6,11 @@ from pycvsim.targets.slantededgetarget import SlantedEdgeTarget
 from pycvsim.algorithms.esf.edge import Edge
 from pycvsim.algorithms.esf.esf import ESF
 from pycvsim.algorithms.esf.gaussianesf import GaussianESF
+from pycvsim.routines.slantededge.edge import Edge
+from pycvsim.algorithms.esf.edge import Edge
+from pycvsim.algorithms.esf.esf import ESF
+from pycvsim.algorithms.esf.gaussianesf import GaussianESF
+from pycvsim.algorithms.lsf.gaussianlsf import GaussianLSF
 import cv2
 import scipy.ndimage
 import matplotlib.pyplot as plt
@@ -40,6 +45,14 @@ class SlantedEdgeRoutine:
         image, p0, p1 = self.generate_image()
         image = np.mean(image, axis=-1)
 
+
+        if blurring_kernel is not None:
+            image = scipy.ndimage.convolve(image, blurring_kernel)
+        edge = Edge(image, p0, p1)
+        search_region = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
+        safe_zone = 5 if blurring_kernel is None else 2*max(blurring_kernel.shape)
+        esf_x, esf_f = edge.get_edge_profile(normalise=normalize, search_region=search_region, safe_zone=safe_zone)
+
         if convert_to_8_bit:
             image = image.astype(np.uint8)
 
@@ -48,6 +61,11 @@ class SlantedEdgeRoutine:
 
         edge = Edge(p0, p1)
         esf = GaussianESF(image, edge, boundary_region=50, search_region=30)
+
         lsf = GaussianLSF()
         esf_x, esf_f = esf.esf_x, esf.esf_f
+
+        lsf = GaussianLSF(esf)
+        esf_x, esf_f = esf.esf_x, esf.esf_f
+
         return esf_x, esf_f, image

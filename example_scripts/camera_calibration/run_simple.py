@@ -26,10 +26,10 @@ def run(board_size=(7, 6), resolution=(800, 800), dx=0.1):
     print("Setpoints created")
     # create_checkerboard_points(board_size, dx)  #
     objp = calibration_target.get_object_points(transformed=False).astype(np.float32)
-    # Arrays to store object points and image points from all the images.
+    # Arrays to store object points and image points from all the unit_test_images.
     objpoints = []  # 3d point in real world space
     imgpoints = []  # 2d points in image plane.
-    print("{} images".format(len(images)))
+    print("{} unit_test_images".format(len(images)))
     for images_in_setpoint in images:
         image = images_in_setpoint[0]
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
