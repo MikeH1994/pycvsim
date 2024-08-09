@@ -56,6 +56,28 @@ class ESF:
     def fit(self, x: NDArray, f: NDArray, **kwargs) -> NDArray:
         raise Exception("Base function ESF.fit() called")
 
+    @staticmethod
+    def normalise_data(esf_x: NDArray, esf_f: NDArray):
+        def fn(x, x0_, y0_, a_, b_):
+            f = y0_ + a_ * expit((x - x0_) / b_)
+            return f
+
+        # if the left side of the plot is greater than the right side, invert it
+        if np.mean(esf_f[esf_x < 0]) > np.mean(esf_f[esf_x > 0]):
+            esf_x *= -1.0
+        p0 = [0, np.min(esf_f), np.max(esf_f) - np.min(esf_f), 1]
+        [x0, y0, a, _], _ = curve_fit(fn, esf_x, esf_f, p0=p0)
+
+        lower_val = y0
+        upper_val = y0 + a
+        x_offset = x0
+
+        esf_f -= lower_val
+        esf_f /= (upper_val - lower_val)
+        esf_x -= x_offset
+
+        return esf_x, esf_f
+
     # noinspection PyMethodMayBeStatic
     def get_edge_profile(self, img: NDArray, edge: Edge, search_region: int = 20, normalise=True):
         height, width = img.shape
@@ -87,7 +109,7 @@ class ESF:
         esf_x = np.array([x for x, f in sorted_xf])
         esf_f = np.array([f for _, f in sorted_xf])
         if normalise:
-            esf_x, esf_f = normalise_data(esf_x, esf_f)
+            esf_x, esf_f = ESF.normalise_data(esf_x, esf_f)
         return esf_x, esf_f
 
     def plot(self, title=None, xlim=None, stride=1, new_figure=True, show=True):

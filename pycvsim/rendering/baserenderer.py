@@ -5,6 +5,7 @@ import open3d as o3d
 from numpy.typing import NDArray
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from .scenecamera import SceneCamera
+import scipy.ndimage
 
 
 class BaseRenderer:
@@ -104,7 +105,11 @@ class BaseRenderer:
         image = self._render_(camera, return_as_8_bit=return_as_8_bit, **kwargs)
 
         if apply_dof and camera.dof_model is not None:
-            depth = self.raycast_scene(camera_index, apply_distortion=False)["depth"]
+            if isinstance(camera.dof_model, np.ndarray):
+                image = scipy.ndimage.gaussian_filter(image, 1.0)
+                # scipy.ndimage.convolve(image[:, :, i], camera.dof_model)
+
+            # depth = self.raycast_scene(camera_index, apply_distortion=False)["depth"]
             # image = camera.dof_model.apply(image, depth_map=depth, focus_distance=np.percentile(depth.reshape(-1), 50.0))
 
         if apply_distortion:
