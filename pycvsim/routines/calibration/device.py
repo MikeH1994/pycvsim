@@ -130,7 +130,7 @@ def optimise_calibration_target(folderpath, devices, calibration_target_init, i_
     Parameters
     ----------
     folderpath
-        the folderpath of the calibration images that we are going to use in the
+        the folderpath of the calibration unit_test_images that we are going to use in the
         camera calibrations
     devices
         a list of camera_calibration.Device instances
