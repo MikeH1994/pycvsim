@@ -1,13 +1,13 @@
 import numpy as np
 from pycvsim.targets.siemensstar import SiemensStar
 from pycvsim.rendering.open3drenderer import Open3DRenderer
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.core.image_utils import overlay_points_on_image
 import matplotlib.pyplot as plt
 
 res = (720, 640)
 mesh = SiemensStar(radius=0.5, n_spokes=36)
-cameras = [SceneCamera(pos=np.array([0.0, 0.0, -3]), res=res, hfov=30.0)]
+cameras = [BaseCamera(pos=np.array([0.0, 0.0, -3]), res=res, hfov=30.0)]
 renderer = Open3DRenderer(cameras=cameras, objects=[mesh])
 
 while True:

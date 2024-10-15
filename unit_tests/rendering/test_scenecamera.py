@@ -2,7 +2,7 @@ import unittest
 from unittest import TestCase
 import numpy as np
 from numpy.testing import assert_allclose
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 import open3d as o3d
 
 
@@ -27,17 +27,17 @@ class TestSceneCamera(TestCase):
 
     @unittest.SkipTest
     def test_calc_pixel_direction(self):
-        cameras = [SceneCamera(res=(720, 640), hfov=35.0),
-                   SceneCamera.create_camera_from_euler_angles(pos=np.array([0.2, 0.2, -1.5]),
-                                                               euler_angles=np.array([0, 0, 0]),
-                                                               res=(640, 512), hfov=30.0),
-                   SceneCamera.create_camera_from_lookpos(pos=np.array([0.8, 0.8, -1.5]),
-                                                          lookpos=np.array([0.0, 0.0, 0.0]),
-                                                          up=np.array([0.0, 1.0, 0.0]),
-                                                          res=(320, 256), hfov=100.0),
-                   SceneCamera.create_camera_from_euler_angles(pos=np.array([0.8, 0.8, 0.8]),
-                                                               euler_angles=np.random.uniform(-180, 180, 3),
-                                                               res=(320, 256), hfov=100.0)
+        cameras = [BaseCamera(res=(720, 640), hfov=35.0),
+                   BaseCamera.create_camera_from_euler_angles(pos=np.array([0.2, 0.2, -1.5]),
+                                                              euler_angles=np.array([0, 0, 0]),
+                                                              res=(640, 512), hfov=30.0),
+                   BaseCamera.create_camera_from_lookpos(pos=np.array([0.8, 0.8, -1.5]),
+                                                         lookpos=np.array([0.0, 0.0, 0.0]),
+                                                         up=np.array([0.0, 1.0, 0.0]),
+                                                         res=(320, 256), hfov=100.0),
+                   BaseCamera.create_camera_from_euler_angles(pos=np.array([0.8, 0.8, 0.8]),
+                                                              euler_angles=np.random.uniform(-180, 180, 3),
+                                                              res=(320, 256), hfov=100.0)
                    ]
         np.random.seed(12345)
         for camera in cameras:
@@ -77,17 +77,17 @@ class TestSceneCamera(TestCase):
 
     def test_generate_rays(self):
         cameras = [
-            SceneCamera(res=(640, 512), hfov=30.0),
-            SceneCamera.create_camera_from_euler_angles(pos=np.array([0.2, 0.2, -1.5]),
-                                                        euler_angles=np.array([0, 0, 0]),
-                                                        res=(320, 256), hfov=30.0),
-            SceneCamera.create_camera_from_lookpos(pos=np.array([0.8, 0.8, -1.5]),
-                                                   lookpos=np.array([0.0, 0.0, 0.0]),
-                                                   up=np.array([0.0, 1.0, 0.0]),
-                                                   res=(320, 256), hfov=100.0),
-            SceneCamera.create_camera_from_euler_angles(pos=np.array([0.8, 0.8, 0.8]),
-                                                        euler_angles=np.random.uniform(-180, 180, 3),
-                                                        res=(320, 256), hfov=100.0)
+            BaseCamera(res=(640, 512), hfov=30.0, optical_center=((640-1)/2, (512-1)/2)),
+            BaseCamera.create_camera_from_euler_angles(pos=np.array([0.2, 0.2, -1.5]),
+                                                       euler_angles=np.array([0, 0, 0]),
+                                                       res=(320, 256), hfov=30.0),
+            BaseCamera.create_camera_from_lookpos(pos=np.array([0.8, 0.8, -1.5]),
+                                                  lookpos=np.array([0.0, 0.0, 0.0]),
+                                                  up=np.array([0.0, 1.0, 0.0]),
+                                                  res=(320, 256), hfov=100.0),
+            BaseCamera.create_camera_from_euler_angles(pos=np.array([0.8, 0.8, 0.8]),
+                                                       euler_angles=np.random.uniform(-180, 180, 3),
+                                                       res=(320, 256), hfov=100.0)
         ]
         for camera_index, camera in enumerate(cameras):
             expected_rays = np.zeros((camera.yres, camera.xres, 6), dtype=np.float32)
@@ -109,9 +109,9 @@ class TestSceneCamera(TestCase):
         self.fail()
 
     def test_get_pixel_direction_and_get_pixel_point_lies_in_match(self):
-        camera = SceneCamera.create_camera_from_euler_angles(pos=np.array([0.8, 0.8, 0.8]),
-                                                             euler_angles=np.random.uniform(-180, 180, 3),
-                                                             res=(320, 320), hfov=100.0)
+        camera = BaseCamera.create_camera_from_euler_angles(pos=np.array([0.8, 0.8, 0.8]),
+                                                            euler_angles=np.random.uniform(-180, 180, 3),
+                                                            res=(320, 320), hfov=100.0)
 
         pixels_arr = np.random.uniform(high=camera.xres, size=(100, 2))
         for i in range(pixels_arr.shape[0]):

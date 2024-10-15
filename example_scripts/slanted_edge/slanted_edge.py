@@ -1,5 +1,5 @@
 import numpy as np
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.routines.slantededge.slantededgeroutine import SlantedEdgeRoutine
 import matplotlib.pyplot as plt
 import scipy.stats as st
@@ -13,8 +13,8 @@ def gkern(kernlen=5, nsig=1):
 
 
 blurring_kernel = gkern()
-camera = SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
-camera_blur = SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
+camera = BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
+camera_blur = BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
 
 
 
@@ -22,9 +22,9 @@ routine = SlantedEdgeRoutine(camera, angle=5.0)
 esf_x, esf_f, image = routine.run(normalize=False)
 
 esf_x_blurred, esf_f_blurred, _ = routine.run(blurring_kernel=blurring_kernel, normalize=False)
-plt.title("Edge profile with and without PSF")
-plt.plot(esf_x*np.cos(np.radians(5)), esf_f/255.0, label="No PSF")
-plt.plot(esf_x_blurred*np.cos(np.radians(5)), esf_f_blurred/255.0, label="With gaussian PSF")
+plt.title("Edge profile with and without psf")
+plt.plot(esf_x*np.cos(np.radians(5)), esf_f/255.0, label="No psf")
+plt.plot(esf_x_blurred*np.cos(np.radians(5)), esf_f_blurred/255.0, label="With gaussian psf")
 plt.xlabel("Distance from pixel to edge")
 plt.ylabel("Intensity")
 plt.legend(loc=0)
@@ -39,8 +39,9 @@ esf_x, esf_f, _ = SlantedEdgeRoutine(camera, angle=44.0).run(normalize=False)
 plt.plot(esf_x*np.cos(np.radians(44.0)), esf_f, label="44 degrees")
 plt.xlim((-0.75, 0.75))
 plt.legend(loc=0)
-plt.show()"""
+plt.show()
 
+"""
 plt.title("ESF with blurring")
 esf_x, esf_f, _ = SlantedEdgeRoutine(camera_blur, angle=5.0).run(normalize=False, convert_to_8_bit=True, apply_gaussian=True)
 plt.plot(esf_x, esf_f, label="5 degrees")

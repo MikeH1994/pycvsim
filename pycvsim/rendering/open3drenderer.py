@@ -1,5 +1,4 @@
 from typing import List
-import cv2
 import math
 import numpy as np
 import open3d as o3d
@@ -7,14 +6,14 @@ from numpy.typing import NDArray
 from pycvsim.rendering.baserenderer import BaseRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 import psutil
-from .scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 
 
 class Open3DRenderer(BaseRenderer):
-    def __init__(self, cameras: List[SceneCamera] = None, objects: List[SceneObject] = None):
+    def __init__(self, cameras: List[BaseCamera] = None, objects: List[SceneObject] = None):
         super().__init__(cameras=cameras, objects=objects)
 
-    def _render_(self, camera: SceneCamera, n_samples=32, mask=None, return_as_8_bit=True,
+    def _render_(self, camera: BaseCamera, n_samples=32, mask=None, return_as_8_bit=True,
                  background_colour=np.array([51.0, 51.0, 51.0])):
         """
 
@@ -29,10 +28,10 @@ class Open3DRenderer(BaseRenderer):
         background_colour = np.array(background_colour)
 
         safe_zone = camera.safe_zone
-        xres, yres = camera.get_res(include_safe_zone=True)
+        xres, yres = camera.get_res()
         if mask is None:
             mask = np.ones((yres, xres), dtype=np.uint8)
-        elif camera.safe_zone > 0:
+        elif camera.xres + 2*camera.safe_zone != mask.shape[1]:
             mask_padded = np.zeros((yres, xres), dtype=np.uint8)
             mask_padded[safe_zone:-safe_zone, safe_zone:-safe_zone] = mask
             mask = mask_padded
@@ -63,7 +62,7 @@ class Open3DRenderer(BaseRenderer):
             return dst_image.astype(np.uint8)
         return dst_image
 
-    def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: SceneCamera,
+    def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: BaseCamera,
                        x_indices: NDArray, y_indices: NDArray, n_samples=1,
                        background_colour: NDArray = np.array([51.0, 51.0, 51.0])):
         """

@@ -1,7 +1,7 @@
 from unittest import TestCase
 import cv2
 import numpy as np
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.targets.checkerboardtarget import CheckerbordTarget
@@ -11,8 +11,8 @@ board_size = (7, 6)
 scene_object = CheckerbordTarget(board_size, (0.05, 0.05), board_thickness=0.02,
                                  color_1=(255, 255, 255), color_2=(0, 0, 0),
                                  color_bkg=(128, 0, 0), board_boundary=0.05, name="checkerboard")
-cameras = [SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(720, 720), hfov=30.0, safe_zone=100),
-           SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(605, 599), hfov=40.0, safe_zone=50)]
+cameras = [BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(720, 720), hfov=30.0, safe_zone=100),
+           BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(605, 599), hfov=40.0, safe_zone=50)]
 panda3d_renderer = Panda3DRenderer(cameras=cameras, objects=[scene_object])
 open3d_renderer = Open3DRenderer(cameras=cameras, objects=[scene_object])
 

@@ -2,7 +2,8 @@ import numpy as np
 import numbers
 from typing import Tuple
 from numpy.typing import NDArray
-from .vector_maths import calc_closest_y_direction, rotation_matrix_to_axes
+import scipy.spatial
+from .vector_maths import calc_closest_y_direction, rotation_matrix_to_axes, rotation_matrix_to_axes
 
 
 def focal_length_to_fov(fx: float, xres: float) -> float:
@@ -92,3 +93,83 @@ def create_camera_matrix(cx: float, cy: float, fx: float, fy: float = None):
                               [0.0, fy, cy],
                               [0.0, 0.0, 1.0]], dtype=np.float32)
     return camera_matrix
+
+
+def get_pixel_point_lies_in(points: NDArray, camera_pos, r, res, fov, centre) -> NDArray:
+    """
+    Deproject a point in 3D space on to the 2D image_safe_zone plane, and calculate the coordinates of it
+
+    :param points: a point in 3D space. Shape: (3)
+    :type points: np.ndarray
+    :return: an array of shape (2) containing the x and y coordinates of the 3D point deprojected on to the
+        image_safe_zone plane
+    :rtype: np.ndarray
+    """
+    x_axis, y_axis, z_axis = rotation_matrix_to_axes(r)
+    xres, yres = res
+    hfov, vfov = fov
+    hfov = np.radians(hfov)
+    vfov = np.radians(vfov)
+    cx, cy = centre
+
+    init_shape = points.shape
+    points = points.reshape(-1, 3)
+
+    # calculate the direction vector from the camera to the defined points
+    direction_vector = (points - camera_pos)
+    # convert this vector to local coordinate space by doing dot product of
+    # direction vector and each axis
+    x_prime = np.sum(direction_vector*x_axis, axis=-1)
+    y_prime = np.sum(direction_vector*y_axis, axis=-1)
+    z_prime = np.sum(direction_vector*z_axis, axis=-1)
+    # deproject on to image plane
+    k_x = 2 * z_prime * np.tan(hfov / 2.0)
+    k_y = 2 * z_prime * np.tan(vfov / 2.0)
+    u = (x_prime / k_x * xres + cx)
+    v = (y_prime / k_y * yres + cy)
+    #
+    result = np.zeros((x_prime.shape[0], 2))
+    result[:, 0] = u
+    result[:, 1] = v
+    # returned shape is the same as initial shape, but final dimension is 2 instead of 3
+    result = result.reshape((*init_shape[:-1], 2))
+
+    return result
+
+def get_pixel_direction(p: NDArray, r: NDArray, res, fov, centre) -> NDArray:
+    """
+    Get the direction vector corresponding to the given pixel coordinates
+
+    :param p: the pixel coordinates
+    :return: an array of length 3, which corresponds to the direction vector in world space for the given
+             pixel coordinates
+    :rtype: np.ndarray
+    """
+
+    cx, cy = centre
+    hfov, vfov = fov
+    xres, yres = res
+
+    init_shape = p.shape
+    p = p.reshape(-1, 2)
+    n = p.shape[0]
+
+    u = p[:, 0]
+    v = p[:, 1]
+
+    # calculate the direction vector of the rays in local coordinates
+    vz = 1
+
+    vec = np.zeros((n, 3))
+    vec[:, 0] = 2.0 * vz * (u - cx) / xres * np.tan(np.radians(hfov / 2.0))
+    vec[:, 1] = 2.0 * vz * (v - cy) / yres * np.tan(np.radians(vfov / 2.0))
+    vec[:, 2] = vz
+
+    # calculate the direction vector in world coordinates
+    r = scipy.spatial.transform.Rotation.from_matrix(r)
+    vec = r.apply(vec)
+    vec /= np.linalg.norm(vec, axis=-1).reshape(-1, 1)
+
+    # reshape to match input size
+    vec = vec.reshape((*init_shape[:-1], 3))
+    return vec

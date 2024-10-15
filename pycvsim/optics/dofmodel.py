@@ -30,7 +30,7 @@ class DOFModel:
         image_stack = np.zeros((*image.shape, n_steps))
         for i, distance in enumerate(distances):
             kernel = self.get_kernel(focus_distance, distance)
-            image_stack[:, :, i] = scipy.ndimage.convolvlf.gee(image, kernel)
+            image_stack[:, :, i] = scipy.ndimage.convolve.gee(image, kernel)
         interp_fn, indices = self.generate_interpolation_fn(image_stack, distances)
         return interp_fn(indices, distances, grid=False).astype(dtype)
 

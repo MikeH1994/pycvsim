@@ -1,6 +1,5 @@
-import numpy as np
 from numpy.typing import NDArray
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 
 
 class CameraCalibrationRoutine:
@@ -10,6 +9,6 @@ class CameraCalibrationRoutine:
     def run(self):
         pass
 
-    def evaluate(self, camera: SceneCamera, camera_matrix: NDArray, distortion_coeffs: NDArray):
+    def evaluate(self, camera: BaseCamera, camera_matrix: NDArray, distortion_coeffs: NDArray):
         true_hfov, true_vfov = camera.get_fov(include_safe_zone=False)
         # true_camera_matrix = camera.get_ca

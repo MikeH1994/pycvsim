@@ -1,6 +1,6 @@
 from pycvsim.routines.calibration.imagesetgenerator import ImageSetGenerator
-from pycvsim.rendering import SceneCamera
-from pycvsim.sceneobjects.calibrationtargets import CheckerbordTarget
+from pycvsim.camera.camera import Camera
+from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 import numpy as np
 import cv2
 
@@ -16,7 +16,7 @@ def create_checkerboard_points(board_size, dx):
 
 def run(board_size=(7, 6), resolution=(800, 800), dx=0.1):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    camera = SceneCamera(pos=np.array([-0.0, 0.0, -1.5]), res=resolution, hfov=30.0)
+    camera = Camera(pos=np.array([-0.0, 0.0, -1.5]), res=resolution, hfov=30.0)
     cameras = [camera]
     calibration_target = CheckerbordTarget(board_size, (dx, dx), board_thickness=0.02, color_bkg=(128, 0, 0))
     manager = ImageSetGenerator(cameras=cameras, calibration_target=calibration_target, n_horizontal=4, n_vertical=4,

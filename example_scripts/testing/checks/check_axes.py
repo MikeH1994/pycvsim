@@ -1,7 +1,7 @@
 import numpy as np
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.core.globalsettings import GlobalSettings
 import cv2
 import itertools
@@ -76,7 +76,7 @@ def test_3(renderer, scene_object):
 
 def run():
     obj = SceneObject.load_armadillo()
-    cameras = [SceneCamera(pos=np.array([0.0, 0.0, -2.0]), res=(720, 720), hfov=60.0)]
+    cameras = [BaseCamera(pos=np.array([0.0, 0.0, -2.0]), res=(720, 720), hfov=60.0)]
     renderer = Panda3DRenderer(cameras=cameras, objects=[obj])
     for perm_1 in list(itertools.permutations(['x', 'y', 'z'])):
         GlobalSettings.OPEN3D_EULER_AXES = perm_1[0] + perm_1[1] + perm_1[2]

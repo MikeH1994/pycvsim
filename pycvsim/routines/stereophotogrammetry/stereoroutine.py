@@ -1,10 +1,7 @@
-from pycvsim.rendering.scenecamera import SceneCamera
-from pycvsim.rendering.panda3drenderer import Panda3DRenderer
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 import pycvsim.routines.stereophotogrammetry.utils as utils
-import cv2
-from typing import Tuple
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,7 +10,7 @@ import scipy.spatial.transform
 
 
 class StereoRoutine:
-    def __init__(self, camera_1: SceneCamera, camera_2: SceneCamera):
+    def __init__(self, camera_1: BaseCamera, camera_2: BaseCamera):
         self.camera_1 = camera_1
         self.camera_2 = camera_2
         self.image_size = camera_1.image_size

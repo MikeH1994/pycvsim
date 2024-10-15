@@ -1,4 +1,4 @@
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.targets.siemensstar import SiemensStar
 from scipy import signal
@@ -11,7 +11,7 @@ import scipy.interpolate
 
 
 class SiemensStarRoutine:
-    def __init__(self, camera: SceneCamera, target: SiemensStar):
+    def __init__(self, camera: BaseCamera, target: SiemensStar):
         self.camera = camera
         self.target = target
         self.renderer = Open3DRenderer(cameras=[self.camera], objects=[self.target]) # Open3DRenderer
