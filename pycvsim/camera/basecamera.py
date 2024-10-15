@@ -9,16 +9,17 @@ from pycvsim.optics.noisemodel import NoiseModel
 from pycvsim.optics.dofmodel import DOFModel
 
 
-class SceneCamera:
+class BaseCamera:
     """
-    The SceneCamera class represents a virtual camera in the pbrt scene
+    The BaseeCamera class represents a virtual camera in the scene
     """
     n_cameras: int = 0
     name: str = ""
 
     def __init__(self, pos: NDArray = np.zeros(3), r: NDArray = np.eye(3), res: Tuple[int, int] = (640, 512),
                  hfov: float = 40.0, name: str = "", optical_center: Tuple[float, float] = None,
-                 distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100,
+                 safe_zone: int = 100, focal_length_mm: float = None,
+                 distortion_coeffs: NDArray = np.zeros(5),
                  dof_model: DOFModel = None, noise_model: NoiseModel = None):
         """
         Creates a Camera instance using a position in space and a 3x3 rotation matrix to define the viewing direction
@@ -33,7 +34,7 @@ class SceneCamera:
         :type hfov: float
         """
         if name == "":
-            name = "camera {}".format(SceneCamera.n_cameras + 1)
+            name = "camera {}".format(BaseCamera.n_cameras + 1)
         assert(pos.shape == (3, ))
         assert(r.shape == (3, 3))
 
@@ -47,6 +48,7 @@ class SceneCamera:
         self.r: NDArray = r
         self.name: str = name
         self.safe_zone: int = safe_zone
+        self.focal_length_mm = focal_length_mm
         self.distortion_coeffs: NDArray = distortion_coeffs
         self.camera_matrix = self.get_camera_matrix()
         self.distortion_model: DistortionModel = DistortionModel(self.camera_matrix, self.distortion_coeffs,
@@ -55,7 +57,7 @@ class SceneCamera:
         self.dof_model: DOFModel = dof_model
         self.saved_state = {}
         self.save_state()
-        SceneCamera.n_cameras += 1
+        BaseCamera.n_cameras += 1
 
     def get_camera_matrix(self):
         hfov, vfov = self.get_fov(include_safe_zone=False)
@@ -72,7 +74,7 @@ class SceneCamera:
         hfov = self.hfov
         vfov = cvmaths.hfov_to_vfov(hfov, self.xres, self.yres)
         if include_safe_zone:
-            xres_safe_zone, yres_safe_zone = self.get_res(include_safe_zone=True)
+            xres_safe_zone, yres_safe_zone = self.get_res(include_safe_zone=include_safe_zone)
             hfov = cvmaths.calculate_hfov_for_safe_zone(self.xres, xres_safe_zone, hfov)
             vfov = cvmaths.hfov_to_vfov(hfov, xres_safe_zone, yres_safe_zone)
         return hfov, vfov
@@ -163,37 +165,18 @@ class SceneCamera:
         Get the direction vector corresponding to the given pixel coordinates
 
         :param p: the pixel coordinates
-        :type u: float
         :return: an array of length 3, which corresponds to the direction vector in world space for the given
                  pixel coordinates
         :rtype: np.ndarray
         """
-        init_shape = p.shape
-        p = p.reshape(-1, 2)
-        n = p.shape[0]
 
         if apply_distortion:
             pass  # p = self.distortion_model.distort_points(p)
 
-        u = p[:, 0]
-        v = p[:, 1]
-
-        # calculate the direction vector of the rays in local coordinates
-        vz = 1
-
-        vec = np.zeros((n, 3))
-        vec[:, 0] = 2.0 * vz * (u - self.cx) / self.xres * np.tan(np.radians(self.hfov / 2.0))
-        vec[:, 1] = 2.0 * vz * (v - self.cy) / self.yres * np.tan(np.radians(self.vfov / 2.0))
-        vec[:, 2] = vz
-
-        # calculate the direction vector in world coordinates
-        r = scipy.spatial.transform.Rotation.from_matrix(self.r)
-        vec = r.apply(vec)
-        vec /= np.linalg.norm(vec, axis=-1).reshape(-1, 1)
-
-        # reshape to match input size
-        vec = vec.reshape((*init_shape[:-1], 3))
-        return vec
+        res = (self.xres, self.yres)
+        fov = (self.hfov, self.vfov)
+        centre = (self.cx, self.cy)
+        return cvmaths.get_pixel_direction(p, self.r, res, fov, centre)
 
     def get_pixel_point_lies_in(self, points: NDArray, apply_distortion=False) -> NDArray:
         """
@@ -205,29 +188,11 @@ class SceneCamera:
             image_safe_zone plane
         :rtype: np.ndarray
         """
-        init_shape = points.shape
-        points = points.reshape(-1, 3)
-        x_axis, y_axis, z_axis = self.get_axes()
-        # calculate the direction vector from the camera to the defined points
-        direction_vector = (points - self.pos)
-        # convert this vector to local coordinate space by doing dot product of
-        # direction vector and each axis
-        x_prime = np.sum(direction_vector*x_axis, axis=-1)
-        y_prime = np.sum(direction_vector*y_axis, axis=-1)
-        z_prime = np.sum(direction_vector*z_axis, axis=-1)
-        hfov = np.radians(self.hfov)
-        vfov = np.radians(self.vfov)
-        # deproject on to image plane
-        k_x = 2 * z_prime * np.tan(hfov / 2.0)
-        k_y = 2 * z_prime * np.tan(vfov / 2.0)
-        u = (x_prime / k_x * self.xres + self.cx)
-        v = (y_prime / k_y * self.yres + self.cy)
-        #
-        result = np.zeros((x_prime.shape[0], 2))
-        result[:, 0] = u
-        result[:, 1] = v
-        # returned shape is the same as initial shape, but final dimension is 2 instead of 3
-        result = result.reshape((*init_shape[:-1], 2))
+
+        res = (self.xres, self.yres)
+        fov = (self.hfov, self.vfov)
+        centre = (self.cx, self.cy)
+        result = cvmaths.get_pixel_point_lies_in(points, self.pos, self.r, res, fov, centre)
 
         if apply_distortion:
             pass # result = self.distortion_model.distort_points(result)
@@ -263,11 +228,14 @@ class SceneCamera:
         rays = rays.reshape((*init_shape[:-1], 6))
         return rays
 
+    def convert_image_to_rgb(self, image: NDArray):
+        raise Exception("Base function convert_image_to_rgb() called")
+
     @staticmethod
     def create_camera_from_lookpos(pos: NDArray, lookpos: NDArray, up: NDArray,
                                    res: Tuple[int, int], hfov: float, name="",
                                    optical_center: Tuple[float, float] = None,
-                                   distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> SceneCamera:
+                                   distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> BaseCamera:
         """
         Creates a camera from a lookpos, as opposed to a 3x3 rotation matrix.
 
@@ -282,17 +250,17 @@ class SceneCamera:
         :param hfov: the horizontal field of view of the camera, in degrees
         :type hfov: float
         :return: the created camera instance
-        :rtype: SceneCamera
+        :rtype: BaseCamera
         """
         r = cvmaths.lookpos_to_rotation_matrix(pos, lookpos, up)
-        return SceneCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
-                           distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
+        return BaseCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
+                          distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
 
     @staticmethod
     def create_camera_from_euler_angles(pos: NDArray, euler_angles: NDArray,
                                         res: Tuple[int, int], hfov: float, name = "",
                                         optical_center: Tuple[float, float] = None,
-                                        distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> SceneCamera:
+                                        distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> BaseCamera:
         """
         Creates a camera from a lookpos, as opposed to a 3x3 rotation matrix.
 
@@ -305,8 +273,8 @@ class SceneCamera:
         :param hfov: the horizontal field of view of the camera, in degrees
         :type hfov: float
         :return: the created camera instance
-        :rtype: SceneCamera
+        :rtype: BaseCamera
         """
         r = cvmaths.euler_angles_to_rotation_matrix(euler_angles)
-        return SceneCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
-                           distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
+        return BaseCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
+                          distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)

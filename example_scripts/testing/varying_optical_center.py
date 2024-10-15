@@ -1,12 +1,12 @@
 import numpy as np
 from pycvsim.targets.checkerboardtarget import CheckerbordTarget
 from pycvsim.rendering.open3drenderer import Open3DRenderer
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 import matplotlib.pyplot as plt
 
 mesh = CheckerbordTarget((9, 8), (0.05, 0.05), board_thickness=0.02, color_bkg=(128, 0, 0), board_boundary=0.05)
 
-cameras = [SceneCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=30.0)]
+cameras = [BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=30.0)]
 renderer = Open3DRenderer(cameras=cameras, objects=[mesh])
 
 fig = plt.figure()

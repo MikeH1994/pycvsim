@@ -1,25 +1,25 @@
-from typing import List
+from typing import List, Union
 import cv2
 import numpy as np
 import open3d as o3d
 from numpy.typing import NDArray
 from pycvsim.sceneobjects.sceneobject import SceneObject
-from .scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 import scipy.ndimage
 
 
 class BaseRenderer:
-    def __init__(self, cameras: List[SceneCamera] = None, objects: List[SceneObject] = None):
+    def __init__(self, cameras: List[BaseCamera] = None, objects: List[SceneObject] = None):
         cameras = cameras if cameras is not None else []
         objects = objects if objects is not None else []
         self.objects: List[SceneObject] = []
-        self.cameras: List[SceneCamera] = []
+        self.cameras: List[BaseCamera] = []
         for camera in cameras:
             self.add_camera(camera)
         for obj in objects:
             self.add_object(obj)
 
-    def add_camera(self, camera: SceneCamera):
+    def add_camera(self, camera: BaseCamera):
         self.cameras.append(camera)
 
     def remove_camera(self, camera_index: int):
@@ -89,7 +89,8 @@ class BaseRenderer:
             images.append(self.render(i, apply_distortion=apply_distortion))
         return images
 
-    def render(self, camera_index, apply_distortion=False, apply_noise=False, apply_dof=True, return_as_8_bit=True, **kwargs):
+    def render(self, camera_index, apply_distortion=False, apply_noise=False, apply_dof=True, return_as_8_bit=True,
+               n_samples: Union[List, int]=1, n_bkg_samples: int = 1, **kwargs):
         """
 
         :param camera_index:
@@ -102,13 +103,32 @@ class BaseRenderer:
         if camera_index >= len(self.cameras):
             raise Exception("Camera index {} is out of bounds".format(camera_index))
         camera = self.cameras[camera_index]
-        image = self._render_(camera, return_as_8_bit=return_as_8_bit, **kwargs)
 
-        if apply_dof and camera.dof_model is not None:
+        w, h = camera.get_res()
+        if isinstance(n_samples, int):
+            n_samples = [(n_samples, np.ones((h, w), dtype=np.uint8))]
+
+        pixels_not_sampled = np.ones((h, w), dtype=np.uint8)
+        # pad each mask to include safe zone. Also, find which pixels aren't sampled
+        for i, (n_samps, samples_mask) in enumerate(n_samples):
+            if samples_mask.shape[1] != camera.xres + 2*camera.safe_zone > 0:
+                safe_zone = camera.safe_zone
+                mask_padded = np.zeros((h, w), dtype=np.uint8)
+                mask_padded[safe_zone:-safe_zone, safe_zone:-safe_zone] = samples_mask
+                n_samples[i] = (n_samps, mask_padded)
+            pixels_not_sampled[n_samples[i][1] > 0] = 0
+
+        n_samples.insert(0, (n_bkg_samples, pixels_not_sampled))
+
+        image = np.zeros((h, w, 3))
+        for (n_samps, samples_mask) in n_samples:
+            img_ = self._render_(camera, return_as_8_bit=False, n_samples=n_samps, mask=samples_mask)
+            image[samples_mask > 0] = img_[samples_mask > 0]
+
+        if camera.dof_model is not None:
             if isinstance(camera.dof_model, np.ndarray):
-                image = scipy.ndimage.gaussian_filter(image, 1.0)
-                # scipy.ndimage.convolve(image[:, :, i], camera.dof_model)
-
+                for i in range(image.shape[2]):
+                    image[:, :, i] = scipy.ndimage.convolve(image[:, :, i], camera.dof_model)
             # depth = self.raycast_scene(camera_index, apply_distortion=False)["depth"]
             # image = camera.dof_model.apply(image, depth_map=depth, focus_distance=np.percentile(depth.reshape(-1), 50.0))
 
@@ -124,7 +144,7 @@ class BaseRenderer:
 
         return image
 
-    def _render_(self, camera: SceneCamera, return_as_8_bit=True, **kwargs) -> NDArray:
+    def _render_(self, camera: BaseCamera, n_samples: int, return_as_8_bit=True, mask=None, **kwargs) -> NDArray:
         """
         The base function for the renderer to implement. Returns a 3 channel floating point image, of the
         shape (h, w, 3), where all values lie within the range [0, 1]

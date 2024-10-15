@@ -1,6 +1,6 @@
 from numpy.typing import NDArray
 from typing import Union
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.sceneobjects.sceneobject import SceneObject
 
 
@@ -44,7 +44,7 @@ class CameraSetpoint(Setpoint):
     def __init__(self):
         super().__init__()
 
-    def apply(self, camera: SceneCamera):
+    def apply(self, camera: BaseCamera):
         raise Exception("Base function CameraSetpoint.apply() called")
 
 
@@ -59,7 +59,7 @@ class CameraLookPosSetpoint(CameraSetpoint):
         self.lookpos = lookpos
         self.up = up
 
-    def apply(self, camera: SceneCamera):
+    def apply(self, camera: BaseCamera):
         if self.pos is not None:
             camera.pos = self.pos
         camera.set_lookpos(self.lookpos, self.up)
@@ -74,7 +74,7 @@ class CameraPosSetpoint(CameraSetpoint):
         self.pos = pos
         self.mode = mode
 
-    def apply(self, camera: SceneCamera):
+    def apply(self, camera: BaseCamera):
         camera.set_pos(self.pos, self.mode)
 
 
@@ -90,7 +90,7 @@ class CameraEulerSetpoint(CameraSetpoint):
         self.mode = mode
         assert(mode == 'absolute' or mode == 'relative')
 
-    def apply(self, camera: SceneCamera):
+    def apply(self, camera: BaseCamera):
         if self.pos is not None:
             camera.pos = self.pos
 

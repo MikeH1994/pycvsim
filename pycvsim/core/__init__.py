@@ -12,6 +12,8 @@ from .pinhole_camera_maths import (focal_length_to_fov,
                                    fov_to_focal_length,
                                    hfov_to_vfov,
                                    create_camera_matrix,
-                                   calculate_hfov_for_safe_zone)
+                                   calculate_hfov_for_safe_zone,
+                                   get_pixel_point_lies_in,
+                                   get_pixel_direction)
 from .image_utils import (overlay_points_on_image, resize_image)
 from .globalsettings import GlobalSettings

@@ -1,5 +1,5 @@
-from pycvsim.sceneobjects.calibrationtargets import CalibrationTarget
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.targets.calibrationtarget import CalibrationTarget
+from pycvsim.camera.basecamera import BaseCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 import numbers
 import numpy as np
@@ -9,7 +9,7 @@ from numpy.typing import NDArray
 
 
 class ImageSetGenerator:
-    def __init__(self, cameras: List[SceneCamera], calibration_target: CalibrationTarget, **kwargs):
+    def __init__(self, cameras: List[BaseCamera], calibration_target: CalibrationTarget, **kwargs):
         self.renderer = Panda3DRenderer(cameras=cameras, objects=[calibration_target])
         self.calibration_target: CalibrationTarget = calibration_target
         self.random_alpha: float = 20
@@ -45,7 +45,7 @@ class ImageSetGenerator:
             assert(isinstance(self.random_gamma, numbers.Number))
             self.camera_mode = kwargs["random_gamma"]
 
-    def get_closest_position(self, camera: SceneCamera, distance_to_target: float, x_desired: float, y_desired: float,
+    def get_closest_position(self, camera: BaseCamera, distance_to_target: float, x_desired: float, y_desired: float,
                              euler_angles: NDArray):
         self.calibration_target.set_pos(np.array([0.0, 0.0, 0.0]))
         self.calibration_target.set_euler_angles(euler_angles)
@@ -131,7 +131,7 @@ class ImageSetGenerator:
                 setpoints.append(ObjectPosSetpoint(pos=target_posn, euler_angles=euler_angles))
         return setpoints
 
-    def generate_angled_setpoints(self, camera: SceneCamera):
+    def generate_angled_setpoints(self, camera: BaseCamera):
         self.calibration_target.set_pos(np.array([0.0, 0.0, 0.0]))
         self.calibration_target.set_euler_angles(np.array([0.0, 0.0, 0.0]))
 

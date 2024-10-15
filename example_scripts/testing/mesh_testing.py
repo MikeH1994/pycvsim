@@ -1,13 +1,13 @@
 import numpy as np
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
-from pycvsim.rendering.scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 import matplotlib.pyplot as plt
 
 cameras = [
-    SceneCamera.create_camera_from_euler_angles(pos=np.array([0.0, 0.0, -3.0]),
-                                                euler_angles=np.array([0, 0, 0]),
-                                                res=(640, 512), hfov=30.0),
+    BaseCamera.create_camera_from_euler_angles(pos=np.array([0.0, 0.0, -3.0]),
+                                               euler_angles=np.array([0, 0, 0]),
+                                               res=(640, 512), hfov=30.0),
 ]
 
 obj_mesh = SceneObject.load_armadillo()

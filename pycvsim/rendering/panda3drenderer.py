@@ -1,21 +1,17 @@
 from typing import List
-import cv2
-import matplotlib.pyplot as plt
-import time
 import numpy as np
-import open3d as o3d
 from direct.showbase.ShowBase import ShowBase
 from numpy.typing import NDArray
 from pycvsim.rendering.baserenderer import BaseRenderer
 from panda3d.core import LPoint3f, GraphicsBuffer, DisplayRegion, LVecBase4f
-from panda3d.core import NodePath, AntialiasAttrib, FrameBufferProperties, GraphicsPipe, Texture, GraphicsOutput
+from panda3d.core import AntialiasAttrib, FrameBufferProperties, GraphicsPipe, Texture, GraphicsOutput
 from panda3d.core import WindowProperties
 from pycvsim.sceneobjects.sceneobject import SceneObject
-from .scenecamera import SceneCamera
+from pycvsim.camera.basecamera import BaseCamera
 
 
 class Panda3DRenderer(BaseRenderer):
-    def __init__(self, cameras: List[SceneCamera] = None, objects: List[SceneObject] = None):
+    def __init__(self, cameras: List[BaseCamera] = None, objects: List[SceneObject] = None):
         self.renderer = ShowBase(windowType='offscreen')
         super().__init__(cameras, objects)
 
@@ -35,7 +31,7 @@ class Panda3DRenderer(BaseRenderer):
         up = LPoint3f(up[0], up[1], up[2])
         self.renderer.camera.lookAt(pos, up)
 
-    def _render_(self, camera: SceneCamera, n_samples=32, antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True):
+    def _render_(self, camera: BaseCamera, n_samples=32, antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True):
         self.set_render_camera_fov(*camera.get_fov(include_safe_zone=True))
         self.set_render_camera_position(camera.pos)
         self.set_render_camera_lookpos(camera.get_lookpos(), camera.get_up())
