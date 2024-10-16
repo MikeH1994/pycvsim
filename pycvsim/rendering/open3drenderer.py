@@ -14,7 +14,7 @@ class Open3DRenderer(BaseRenderer):
         super().__init__(cameras=cameras, objects=objects)
 
     def _render_(self, camera: BaseCamera, n_samples=32, mask=None, return_as_8_bit=True,
-                 background_colour=np.array([51.0, 51.0, 51.0])):
+                 background_colour=np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
 
         :param camera:
@@ -51,7 +51,8 @@ class Open3DRenderer(BaseRenderer):
             x_pixels_i = x_pixels[i:i+max_elems]
             try:
                 samples = self.render_samples(raycasting_scene, camera, x_pixels_i - safe_zone, y_pixels_i - safe_zone,
-                                              n_samples=n_samples, background_colour=background_colour)
+                                              n_samples=n_samples, background_colour=background_colour,
+                                              fixed_multisample_pattern=fixed_multisample_pattern)
                 dst_image[y_pixels_i, x_pixels_i, :] = samples
                 i += max_elems
             except Exception:
@@ -64,7 +65,7 @@ class Open3DRenderer(BaseRenderer):
 
     def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: BaseCamera,
                        x_indices: NDArray, y_indices: NDArray, n_samples=1,
-                       background_colour: NDArray = np.array([51.0, 51.0, 51.0])):
+                       background_colour: NDArray = np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
 
         :param raycasting_scene:
@@ -78,7 +79,7 @@ class Open3DRenderer(BaseRenderer):
         pixels = np.zeros((x_indices.shape[0], n_samples, 2), dtype=np.float32)
         pixels[:, :, 0] = x_indices.reshape(-1, 1)
         pixels[:, :, 1] = y_indices.reshape(-1, 1)
-        pixels += self.get_multisample_pattern(n_samples)
+        pixels += self.get_multisample_pattern(n_samples, fixed_multisample_pattern)
         rays = camera.generate_rays(apply_distortion=False, pixel_coords=pixels)
         ans = raycasting_scene.cast_rays(o3d.core.Tensor(rays))
 
@@ -102,7 +103,6 @@ class Open3DRenderer(BaseRenderer):
         samples[object_ids == raycasting_scene.INVALID_ID] = background_colour
         samples = np.mean(samples, axis=-2)
         return samples
-
 
     @staticmethod
     def get_multisample_pattern(n_samples: int = 1, fixed_pattern: bool = True):

@@ -122,7 +122,7 @@ class BaseRenderer:
 
         image = np.zeros((h, w, 3))
         for (n_samps, samples_mask) in n_samples:
-            img_ = self._render_(camera, return_as_8_bit=False, n_samples=n_samps, mask=samples_mask)
+            img_ = self._render_(camera, return_as_8_bit=False, n_samples=n_samps, mask=samples_mask, **kwargs)
             image[samples_mask > 0] = img_[samples_mask > 0]
 
         if camera.dof_model is not None:
