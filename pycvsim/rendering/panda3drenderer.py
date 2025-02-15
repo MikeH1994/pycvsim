@@ -33,7 +33,7 @@ if "panda3d" in sys.modules:
             up = LPoint3f(up[0], up[1], up[2])
             self.renderer.camera.lookAt(pos, up)
 
-        def _render_(self, camera: BaseCamera, n_samples=32, antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True):
+        def _render_(self, camera: BaseCamera, n_samples=32, antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True, **kwargs):
             self.set_render_camera_fov(*camera.get_fov(include_safe_zone=True))
             self.set_render_camera_position(camera.pos)
             self.set_render_camera_lookpos(camera.get_lookpos(), camera.get_up())

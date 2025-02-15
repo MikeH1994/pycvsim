@@ -6,6 +6,7 @@ from numpy.typing import NDArray
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycvsim.camera.basecamera import BaseCamera
 import scipy.ndimage
+import scipy.signal
 
 
 class BaseRenderer:
@@ -127,13 +128,16 @@ class BaseRenderer:
 
         if camera.dof_model is not None:
             if isinstance(camera.dof_model, np.ndarray):
+                # scipy.signal. convolve2d
                 for i in range(image.shape[2]):
-                    image[:, :, i] = scipy.ndimage.convolve(image[:, :, i], camera.dof_model)
+                    image[:, :, i] = scipy.signal.convolve2d(image[:, :, i], camera.dof_model, mode="same")
+                    # scipy.ndimage.convolve(image[:, :, i], camera.dof_model, mode="constant")
             # depth = self.raycast_scene(camera_index, apply_distortion=False)["depth"]
             # image = camera.dof_model.apply(image, depth_map=depth, focus_distance=np.percentile(depth.reshape(-1), 50.0))
 
+
         if apply_distortion:
-            pass # image = camera.distortion_model.distort_image(image, remove_safe_zone=False)
+            image = camera.distortion_model.distort_image(image, remove_safe_zone=False)
 
         if apply_noise and camera.noise_model is not None:
             pass # image = camera.noise_model.apply(image)
@@ -141,6 +145,9 @@ class BaseRenderer:
         if camera.safe_zone > 0:
             safe_zone = camera.safe_zone
             image = image[safe_zone:-safe_zone, safe_zone:-safe_zone]
+
+        if return_as_8_bit:
+            return image.astype(np.uint8)
 
         return image
 

@@ -1,5 +1,6 @@
 import numpy as np
 from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.targets.slantededgetarget import SlantedEdgeTarget
 from pycvsim.core.utils import clip_line_to_image
