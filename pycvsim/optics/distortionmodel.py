@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 
 
 class DistortionModel:
-    interpolation_method = cv2.INTER_CUBIC
+    interpolation_method = cv2.INTER_LINEAR
 
     def __init__(self, camera_matrix: NDArray, distortion_coeffs: NDArray, image_size: Tuple[int, int],
                  safe_zone: int = 0):
@@ -119,5 +119,31 @@ class DistortionModel:
         for i in range(30):
             correction = I - cv2.remap(F, P, None, interpolation=self.interpolation_method)
             P += correction * k
-            k *= 0.9
+            k *= 0.5
         return P[:, :, 0], P[:, :, 1]
+
+    @staticmethod
+    def remap_points(x, y, camera_matrix, distortion_coeffs):
+        """
+
+        :param x:
+        :param y:
+        :param camera_matrix:
+        :param distortion_coeffs:
+        :return:
+        """
+        fx = camera_matrix[0][0]
+        fy = camera_matrix[1][1]
+        cx = camera_matrix[0][2]
+        cy = camera_matrix[1][2]
+        k1, k2, p1, p2, k3 = distortion_coeffs
+
+        x = (x - cx) / fx
+        y = (y - cy) / fy
+        r = np.sqrt(x**2 + y**2)
+
+        x_dist = x * (1 + k1*r**2 + k2*r**4 + k3*r**6) + (2 * p1 * x * y + p2 * (r**2 + 2 * x * x))
+        y_dist = y * (1 + k1*r**2 + k2*r**4 + k3*r**6) + (p1 * (r**2 + 2 * y * y) + 2 * p2 * x * y)
+        x_dist = x_dist * fx + cx
+        y_dist = y_dist * fy + cy
+        return x_dist.astype(np.float32), y_dist.astype(np.float32)
