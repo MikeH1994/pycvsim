@@ -7,7 +7,7 @@ from pycvsim.routines.calibration import Device
 from pycvsim.routines.calibration import StereoPair
 
 
-def run(board_size=(7, 6), resolution=(800, 800)):
+def run(board_size=(7, 6), resolution=(600, 800)):
     cameras = [SceneCamera.create_camera_from_lookpos(pos=np.array([-0.2, 0.0, -1.5]), lookpos=np.array([0.0, 0.0, 0.0]),
                                                       up=np.array([0.0, 1.0, 0.0]), res=resolution, hfov=30.0),
                SceneCamera.create_camera_from_lookpos(pos=np.array([0.2, 0.0, -1.5]), lookpos=np.array([0.0, 0.0, 0.0]),
