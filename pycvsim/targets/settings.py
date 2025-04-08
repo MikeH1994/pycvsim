@@ -23,3 +23,22 @@ class CheckerboardSettings:
             for j in range(board_height+2):
                 self.object_points[j, i] = [(i-1)*checker_width, (j-1)*checker_height, 0.0]
 
+@dataclass
+class CircleGridTarget3DSettings:
+    board_dimensions: Tuple[int, int] = (11, 10)
+    board_thickness: float = 0.03
+    point_diameter: Tuple[float, float] = 0.05
+    point_spacing: float = 0.1
+    boundary_size: Tuple[float, float] = (0.05, 0.05)
+    colour_1: Tuple[int, int, int] = (255, 255, 255)
+    colour_2: Tuple[int, int, int] = (0, 0, 0)
+    object_points: NDArray = None
+
+    def __post_init__(self):
+        board_width, board_height = self.board_dimensions
+        checker_width, checker_height = self.checker_size
+        self.object_points = np.zeros((board_height + 2, board_width + 2, 3))
+        for i in range(board_width+2):
+            for j in range(board_height+2):
+                self.object_points[j, i] = [(i-1)*checker_width, (j-1)*checker_height, 0.0]
+
