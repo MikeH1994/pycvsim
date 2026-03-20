@@ -2,16 +2,16 @@ import unittest
 from unittest import TestCase
 import cv2
 import numpy as np
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
-from pycvsim.targets.checkerboardtarget import CheckerbordTarget
+from pycvsim.targets.checkerboardtarget import CheckerboardTarget
 from pycvsim.core.image_utils import overlay_points_on_image
 import matplotlib.pyplot as plt
 
 board_size = (7, 6)
-scene_object = CheckerbordTarget(board_size, (0.05, 0.05), board_thickness=0.02,
-                                 color_1=(255, 255, 255), color_2=(0, 0, 0),
-                                 color_bkg=(128, 0, 0), board_boundary=0.05, name="checkerboard")
+scene_object = CheckerboardTarget(board_size, (0.05, 0.05), board_thickness=0.02,
+                                  color_1=(255, 255, 255), color_2=(0, 0, 0),
+                                  color_bkg=(128, 0, 0), board_boundary=0.05, name="checkerboard")
 renderer = Panda3DRenderer(objects=[scene_object])
 
 
@@ -24,8 +24,8 @@ class TestDistortionCoeffs(TestCase):
         """
         for distortion_coeffs in [np.array([0.0, 0.0, 0.0, 0.0, 0.0]),
                                   np.array([-3.2, 0.32, -0.01, -0.02, 4.3])]:
-            camera = BaseCamera(pos=np.array([0.0, 0.0, -2.0]), res=(720, 640), hfov=15.0,
-                                distortion_coeffs=distortion_coeffs, safe_zone=200)
+            camera = VirtualCamera(pos=np.array([0.0, 0.0, -2.0]), res=(720, 640), hfov=15.0,
+                                   distortion_coeffs=distortion_coeffs, safe_zone=200)
             mdl = camera.distortion_model
 
             # check that opencv map and spline match
@@ -56,8 +56,8 @@ class TestDistortionCoeffs(TestCase):
         hfov = 15.0
         distortion_coeffs = np.array([-3.2, 0.32, -0.01, -0.02, 4.3])
         safe_zone = 200
-        camera = BaseCamera(pos=np.array([0.0, 0.0, -2.0]), res=image_size, hfov=hfov,
-                            distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
+        camera = VirtualCamera(pos=np.array([0.0, 0.0, -2.0]), res=image_size, hfov=hfov,
+                               distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
         renderer.remove_all_cameras()
         renderer.add_camera(camera)
         img = renderer.render(0, apply_distortion=False)
@@ -99,8 +99,8 @@ class TestDistortionCoeffs(TestCase):
                 for safe_zone in [100, 200, 250]:
                     for distortion_coeffs in [np.array([-0.8424, 0.1724, -0.00101, -0.006596, 4.3341])]:
                         xres, yres = image_size
-                        camera = BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=image_size, hfov=hfov,
-                                            distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
+                        camera = VirtualCamera(pos=np.array([0.0, 0.0, -1.5]), res=image_size, hfov=hfov,
+                                               distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
                         renderer.remove_all_cameras()
                         renderer.add_camera(camera)
                         img = renderer.render(0, apply_distortion=False)

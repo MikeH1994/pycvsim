@@ -1,5 +1,5 @@
 import numpy as np
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.routines.slantededge.slantededgeroutine import SlantedEdgeRoutine
 import matplotlib.pyplot as plt
 import scipy.stats as st
@@ -13,8 +13,8 @@ def gkern(kernlen=5, nsig=1):
 
 
 blurring_kernel = gkern()
-camera = BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
-camera_blur = BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
+camera = VirtualCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
+camera_blur = VirtualCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
 
 
 

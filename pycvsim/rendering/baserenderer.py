@@ -4,23 +4,23 @@ import numpy as np
 import open3d as o3d
 from numpy.typing import NDArray
 from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 import scipy.ndimage
 import scipy.signal
 
 
 class BaseRenderer:
-    def __init__(self, cameras: List[BaseCamera] = None, objects: List[SceneObject] = None):
+    def __init__(self, cameras: List[VirtualCamera] = None, objects: List[SceneObject] = None):
         cameras = cameras if cameras is not None else []
         objects = objects if objects is not None else []
         self.objects: List[SceneObject] = []
-        self.cameras: List[BaseCamera] = []
+        self.cameras: List[VirtualCamera] = []
         for camera in cameras:
             self.add_camera(camera)
         for obj in objects:
             self.add_object(obj)
 
-    def add_camera(self, camera: BaseCamera):
+    def add_camera(self, camera: VirtualCamera):
         self.cameras.append(camera)
 
     def remove_camera(self, camera_index: int):
@@ -44,7 +44,7 @@ class BaseRenderer:
         raise Exception("ahhhhhh!")
 
     def set_camera_position(self, camera_index: int, pos: NDArray):
-        self.cameras[camera_index].pos = pos
+        self.cameras[camera_index].p = pos
 
     def set_camera_euler_angles(self, camera_index: int, euler_angles: NDArray, degrees=True):
         self.cameras[camera_index].set_euler_angles(euler_angles, degrees=degrees)
@@ -151,7 +151,7 @@ class BaseRenderer:
 
         return image
 
-    def _render_(self, camera: BaseCamera, n_samples: int, return_as_8_bit=True, mask=None, **kwargs) -> NDArray:
+    def _render_(self, camera: VirtualCamera, n_samples: int, return_as_8_bit=True, mask=None, **kwargs) -> NDArray:
         """
         The base function for the renderer to implement. Returns a 3 channel floating point image, of the
         shape (h, w, 3), where all values lie within the range [0, 1]

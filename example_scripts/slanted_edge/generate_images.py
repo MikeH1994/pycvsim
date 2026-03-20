@@ -1,5 +1,5 @@
 import numpy as np
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.routines.slantededge.slantededgeroutine import SlantedEdgeRoutine
 import cv2
 import os
@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 def run(output_folder):
-    camera = BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
+    camera = VirtualCamera(pos=np.array([0.0, 0.0, -1.5]), res=(800, 800), hfov=20.0)
     for angle in np.linspace(0.0, 45.0, 46):
         routine = SlantedEdgeRoutine(camera, angle=angle)
         image, p0, p1 = routine.generate_image()

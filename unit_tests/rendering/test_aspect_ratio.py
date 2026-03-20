@@ -1,18 +1,18 @@
 from unittest import TestCase
 import cv2
 import numpy as np
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
-from pycvsim.targets.checkerboardtarget import CheckerbordTarget
+from pycvsim.targets.checkerboardtarget import CheckerboardTarget
 
 
 class TestSceneCamera(TestCase):
     def test(self):
         xres, yres = (1280, 720)
-        scene_object = CheckerbordTarget((2, 2), (0.05, 0.05), board_thickness=0.02,
-                                         color_1=(255, 255, 255), color_2=(255, 255, 255),
-                                         name="checkerboard")
-        cameras = [BaseCamera(pos=np.array([0.0, 0.0, -1.0]), res=(xres, yres), hfov=20.0, safe_zone=100)]
+        scene_object = CheckerboardTarget((2, 2), (0.05, 0.05), board_thickness=0.02,
+                                          color_1=(255, 255, 255), color_2=(255, 255, 255),
+                                          name="checkerboard")
+        cameras = [VirtualCamera(pos=np.array([0.0, 0.0, -1.0]), res=(xres, yres), hfov=20.0, safe_zone=100)]
         renderer = Panda3DRenderer(cameras=cameras, objects=[scene_object])
         img = cv2.cvtColor(renderer.render(0), cv2.COLOR_RGB2GRAY)
         mask = np.zeros(img.shape[:2], dtype=np.uint8)

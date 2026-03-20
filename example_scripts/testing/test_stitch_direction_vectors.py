@@ -1,11 +1,11 @@
 import numpy as np
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.core.pinhole_camera_maths import focal_length_to_fov, calc_closest_y_direction
 from scipy.optimize import minimize
 import open3d as o3d
 
 def run():
-    camera = BaseCamera()
+    camera = VirtualCamera()
 
     rays_total = o3d.t.geometry.RaycastingScene.create_rays_pinhole(
         fov_deg=camera.hfov, center=camera.get_lookpos(), eye=camera.pos,
@@ -28,7 +28,7 @@ def run():
 
 
 def do_optimisation():
-    camera = BaseCamera()
+    camera = VirtualCamera()
 
     rays_total = o3d.t.geometry.RaycastingScene.create_rays_pinhole(
         fov_deg=camera.hfov, center=camera.get_lookpos(), eye=camera.pos,

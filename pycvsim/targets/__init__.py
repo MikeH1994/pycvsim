@@ -1,1 +1,1 @@
-from .checkerboardtarget import CheckerbordTarget
+from .checkerboardtarget import CheckerboardTarget

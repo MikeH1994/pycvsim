@@ -31,8 +31,8 @@ class DistortionModel:
         distortion_coeffs = self.distortion_coeffs
         x, y = np.arange(image_size[0]), np.arange(image_size[1])
 
-        self.undistort_map_x, self.undistort_map_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coeffs, None,
-                                                                                 None, image_size, cv2.CV_32FC1)
+        self.undistort_map_x, self.undistort_map_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coeffs, np.eye(3),
+                                                                                 camera_matrix, image_size, cv2.CV_32FC1)
         self.undistort_map_x_fn = scipy.interpolate.RectBivariateSpline(y, x, self.undistort_map_x)
         self.undistort_map_y_fn = scipy.interpolate.RectBivariateSpline(y, x, self.undistort_map_y)
 

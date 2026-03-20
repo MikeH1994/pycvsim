@@ -1,8 +1,8 @@
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 import numpy as np
 from numpy.typing import NDArray
 
-class RGBCamera(BaseCamera):
+class RGBCamera(VirtualCamera):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

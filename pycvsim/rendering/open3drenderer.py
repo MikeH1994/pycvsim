@@ -6,14 +6,14 @@ from numpy.typing import NDArray
 from pycvsim.rendering.baserenderer import BaseRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 import psutil
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 
 
 class Open3DRenderer(BaseRenderer):
-    def __init__(self, cameras: List[BaseCamera] = None, objects: List[SceneObject] = None):
+    def __init__(self, cameras: List[VirtualCamera] = None, objects: List[SceneObject] = None):
         super().__init__(cameras=cameras, objects=objects)
 
-    def _render_(self, camera: BaseCamera, n_samples=32, mask=None, return_as_8_bit=True,
+    def _render_(self, camera: VirtualCamera, n_samples=32, mask=None, return_as_8_bit=True,
                  background_colour=np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
 
@@ -63,7 +63,7 @@ class Open3DRenderer(BaseRenderer):
             return dst_image.astype(np.uint8)
         return dst_image
 
-    def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: BaseCamera,
+    def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: VirtualCamera,
                        x_indices: NDArray, y_indices: NDArray, n_samples=1,
                        background_colour: NDArray = np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
@@ -76,21 +76,33 @@ class Open3DRenderer(BaseRenderer):
         :param background_colour:
         :return:
         """
+
+        # create an array containing the x, y coordinates of the pixels we are going to sample
         pixels = np.zeros((x_indices.shape[0], n_samples, 2), dtype=np.float32)
         pixels[:, :, 0] = x_indices.reshape(-1, 1)
         pixels[:, :, 1] = y_indices.reshape(-1, 1)
+
+        # in this pixels, add the multisampling pattern
         pixels += self.get_multisample_pattern(n_samples, fixed_multisample_pattern)
+
+        # generate rays and the raycast
         rays = camera.generate_rays(apply_distortion=False, pixel_coords=pixels)
         ans = raycasting_scene.cast_rays(o3d.core.Tensor(rays))
 
         object_ids = ans["geometry_ids"].numpy()
         primitive_ids = ans["primitive_ids"].numpy()
+
+        # by default, open3d has each primitive assigned a unique id
+        # for us it is more convenient if the ID represents the index of the corresponding vertices
         offset = 0
         for i in range(len(self.objects)):
             primitive_ids[object_ids == i] -= offset
             offset += np.asarray(self.objects[i].original_mesh.triangles).shape[0]
 
+
+        # create an array of shape (a, b, c, ... , 3) to store sample results
         samples = np.zeros((*rays.shape[:-1], 3), dtype=np.float32)
+        # loop through each object in the scene, and find the samples that hit this object
         for i in range(len(self.objects)):
             # calculate the vertex colours for each triangle
             vertex_colours = np.array(self.objects[i].original_mesh.vertex_colors, dtype=np.float32) * 255.0
@@ -100,7 +112,9 @@ class Open3DRenderer(BaseRenderer):
             triangle_colours += vertex_colours[triangle_indices[:, 2]]
             triangle_colours /= 3
             samples[object_ids == i] = triangle_colours[primitive_ids[object_ids == i]]
+        # these samples do not hit anything
         samples[object_ids == raycasting_scene.INVALID_ID] = background_colour
+        # for each pixel, take average over all samples
         samples = np.mean(samples, axis=-2)
         return samples
 

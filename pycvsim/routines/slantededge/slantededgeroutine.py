@@ -1,5 +1,5 @@
 import numpy as np
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.targets.slantededgetarget import SlantedEdgeTarget
@@ -9,10 +9,10 @@ import scipy.ndimage
 
 
 class SlantedEdgeRoutine:
-    camera: BaseCamera
+    camera: VirtualCamera
     angle: float
 
-    def __init__(self, camera: BaseCamera, angle: float = 5.0):
+    def __init__(self, camera: VirtualCamera, angle: float = 5.0):
         self.camera = camera
         self.angle = angle
         self.target = SlantedEdgeTarget(5.0, angle=angle)

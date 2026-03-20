@@ -6,11 +6,11 @@ from typing import Tuple
 from pycvsim.targets.utils import create_box
 
 
-class CheckerbordTarget(CalibrationTarget):
+class CheckerboardTarget(CalibrationTarget):
     def __init__(self, board_size: Tuple[int, int], grid_size: Tuple[float, float], board_thickness=0.05,
                  boundary_size: Tuple[float, float] = None, name="", **kwargs):
-        tensor_mesh, obj_points = CheckerbordTarget.create_target(board_size, grid_size, board_thickness,
-                                                                  boundary_size=boundary_size, **kwargs)
+        tensor_mesh, obj_points = CheckerboardTarget.create_target(board_size, grid_size, board_thickness,
+                                                                   boundary_size=boundary_size, **kwargs)
         grid_width, grid_height = grid_size
         min_x, min_y, _ = np.min(obj_points, axis=0)
         max_x, max_y, _ = np.max(obj_points, axis=0)

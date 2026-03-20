@@ -1,10 +1,10 @@
 import numpy as np
 from pycvsim.targets.slantededgetarget import SlantedEdgeTarget
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 import matplotlib.pyplot as plt
 
-cameras = [BaseCamera(pos=np.array([0.0, 0.0, -1.5]), res=(1600, 1600), hfov=35.0)]
+cameras = [VirtualCamera(pos=np.array([0.0, 0.0, -1.5]), res=(1600, 1600), hfov=35.0)]
 renderer = Panda3DRenderer(cameras=cameras)
 
 #for theta in np.linspace(310, 360, 15):

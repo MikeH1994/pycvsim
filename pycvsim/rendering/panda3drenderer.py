@@ -4,7 +4,7 @@ import sys
 from pycvsim.rendering.baserenderer import BaseRenderer
 from numpy.typing import NDArray
 from pycvsim.sceneobjects.sceneobject import SceneObject
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 
 if "panda3d" in sys.modules:
     from direct.showbase.ShowBase import ShowBase
@@ -13,7 +13,7 @@ if "panda3d" in sys.modules:
     from panda3d.core import WindowProperties
 
     class Panda3DRenderer(BaseRenderer):
-        def __init__(self, cameras: List[BaseCamera] = None, objects: List[SceneObject] = None):
+        def __init__(self, cameras: List[VirtualCamera] = None, objects: List[SceneObject] = None):
             self.renderer = ShowBase(windowType='offscreen')
             super().__init__(cameras, objects)
 
@@ -33,7 +33,7 @@ if "panda3d" in sys.modules:
             up = LPoint3f(up[0], up[1], up[2])
             self.renderer.camera.lookAt(pos, up)
 
-        def _render_(self, camera: BaseCamera, n_samples=32, antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True, **kwargs):
+        def _render_(self, camera: VirtualCamera, n_samples=32, antialiasing=AntialiasAttrib.MAuto, return_as_8_bit=True, **kwargs):
             self.set_render_camera_fov(*camera.get_fov(include_safe_zone=True))
             self.set_render_camera_position(camera.pos)
             self.set_render_camera_lookpos(camera.get_lookpos(), camera.get_up())
@@ -91,6 +91,6 @@ if "panda3d" in sys.modules:
             return window, bgr_tex
 else:
     class Panda3DRenderer(BaseRenderer):
-        def __init__(self, cameras: List[BaseCamera] = None, objects: List[SceneObject] = None):
+        def __init__(self, cameras: List[VirtualCamera] = None, objects: List[SceneObject] = None):
             super().__init__(cameras, objects)
             raise Exception("Panda3D is not installed")

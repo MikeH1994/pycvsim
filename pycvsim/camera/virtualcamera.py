@@ -7,9 +7,10 @@ import scipy.spatial.transform
 from pycvsim.optics.distortionmodel import DistortionModel
 from pycvsim.optics.noisemodel import NoiseModel
 from pycvsim.optics.dofmodel import DOFModel
+from pycv.pinholecamera import PinholeCamera
 
 
-class BaseCamera:
+class VirtualCamera:
     """
     The BaseeCamera class represents a virtual camera in the scene
     """
@@ -34,7 +35,7 @@ class BaseCamera:
         :type hfov: float
         """
         if name == "":
-            name = "camera {}".format(BaseCamera.n_cameras + 1)
+            name = "camera {}".format(VirtualCamera.n_cameras + 1)
         assert(pos.shape == (3, ))
         assert(r.shape == (3, 3))
 
@@ -57,7 +58,7 @@ class BaseCamera:
         self.dof_model: DOFModel = dof_model
         self.saved_state = {}
         self.save_state()
-        BaseCamera.n_cameras += 1
+        VirtualCamera.n_cameras += 1
 
     def get_camera_matrix(self):
         hfov, vfov = self.get_fov(include_safe_zone=False)
@@ -235,7 +236,7 @@ class BaseCamera:
     def create_camera_from_lookpos(pos: NDArray, lookpos: NDArray, up: NDArray,
                                    res: Tuple[int, int], hfov: float, name="",
                                    optical_center: Tuple[float, float] = None,
-                                   distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> BaseCamera:
+                                   distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> VirtualCamera:
         """
         Creates a camera from a lookpos, as opposed to a 3x3 rotation matrix.
 
@@ -250,17 +251,17 @@ class BaseCamera:
         :param hfov: the horizontal field of view of the camera, in degrees
         :type hfov: float
         :return: the created camera instance
-        :rtype: BaseCamera
+        :rtype: VirtualCamera
         """
         r = cvmaths.lookpos_to_rotation_matrix(pos, lookpos, up)
-        return BaseCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
-                          distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
+        return VirtualCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
+                             distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
 
     @staticmethod
     def create_camera_from_euler_angles(pos: NDArray, euler_angles: NDArray,
                                         res: Tuple[int, int], hfov: float, name = "",
                                         optical_center: Tuple[float, float] = None,
-                                        distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> BaseCamera:
+                                        distortion_coeffs: NDArray = np.zeros(5), safe_zone: int = 100) -> VirtualCamera:
         """
         Creates a camera from a lookpos, as opposed to a 3x3 rotation matrix.
 
@@ -273,8 +274,13 @@ class BaseCamera:
         :param hfov: the horizontal field of view of the camera, in degrees
         :type hfov: float
         :return: the created camera instance
-        :rtype: BaseCamera
+        :rtype: VirtualCamera
         """
         r = cvmaths.euler_angles_to_rotation_matrix(euler_angles)
-        return BaseCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
-                          distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
+        return VirtualCamera(pos, r, res, hfov, name=name, optical_center=optical_center,
+                             distortion_coeffs=distortion_coeffs, safe_zone=safe_zone)
+
+    @staticmethod
+    def create_from_pinhole_camera(camera: PinholeCamera, name="", safe_zone: int = 100):
+        return VirtualCamera(camera.p, camera.r, camera.res(), camera.hfov(), name=name, optical_center=camera.optical_centre(),
+                             distortion_coeffs=camera.distortion_coeffs, safe_zone=safe_zone)

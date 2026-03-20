@@ -1,4 +1,4 @@
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 import pycvsim.routines.stereophotogrammetry.utils as utils
@@ -10,7 +10,7 @@ import scipy.spatial.transform
 
 
 class StereoRoutine:
-    def __init__(self, camera_1: BaseCamera, camera_2: BaseCamera):
+    def __init__(self, camera_1: VirtualCamera, camera_2: VirtualCamera):
         self.camera_1 = camera_1
         self.camera_2 = camera_2
         self.image_size = camera_1.image_size

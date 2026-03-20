@@ -1,7 +1,7 @@
 import numpy as np
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
-from pycvsim.camera.basecamera import BaseCamera
+from pycvsim.camera.virtualcamera import VirtualCamera
 import matplotlib.pyplot as plt
 import cv2
 
@@ -12,10 +12,10 @@ import cv2
 obj = SceneObject.load_armadillo()
 
 cameras = [
-    BaseCamera.create_camera_from_lookpos(pos=np.array([0.0, 0.0, -2.0]),
-                                          lookpos=np.array([0.0, 0.0, 0.0]),
-                                          up=np.array([0.0, 1.0, 0.0]),
-                                          res=(720, 720), hfov=60.0, safe_zone=0)
+    VirtualCamera.create_camera_from_lookpos(pos=np.array([0.0, 0.0, -2.0]),
+                                             lookpos=np.array([0.0, 0.0, 0.0]),
+                                             up=np.array([0.0, 1.0, 0.0]),
+                                             res=(720, 720), hfov=60.0, safe_zone=0)
 ]
 
 renderer = Panda3DRenderer(cameras=cameras, objects=[obj])
