@@ -103,7 +103,7 @@ class StereoRoutine:
         self.renderer.remove_all_objects()
         self.renderer.add_object(mesh)
 
-        mesh_points = mesh.mesh()
+        mesh_points = mesh.get_mesh()
         distance_to_vertices = np.linalg.norm(mesh_points.vertices - self.camera_1.pos, axis=1)
         min_distance = np.min(distance_to_vertices)
         max_distance = np.max(distance_to_vertices)
@@ -152,4 +152,4 @@ class StereoRoutine:
         plt.figure()
         plt.imshow(res["disparity"])
         plt.show()
-        o3d.visualization.draw_geometries([res["pointcloud"], mesh.mesh()])
+        o3d.visualization.draw_geometries([res["pointcloud"], mesh.get_mesh()])

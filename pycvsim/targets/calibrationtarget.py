@@ -17,9 +17,7 @@ class CalibrationTarget(SceneObject):
 
     def get_object_points(self, transformed=True):
         if transformed:
-            pos = self.get_pos()
-            euler_angles = self.get_euler_angles()
-            return transform_object_points(self.object_points, pos, euler_angles)
+            return (self.object_points.reshape(-1, 3) @ self.rotation.T + self.pos)[::-1, :].reshape(self.object_points.shape)
         else:
             return (np.copy(self.object_points) - np.min(self.object_points, axis=0))[::-1, :]
 

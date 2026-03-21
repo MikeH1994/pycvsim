@@ -57,7 +57,7 @@ class BaseRenderer:
         rays = camera.generate_rays().reshape((camera.yres, camera.xres, 6))
         raycasting_scene = o3d.t.geometry.RaycastingScene()
         for obj in self.objects:
-            raycasting_scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(obj.mesh()))
+            raycasting_scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(obj.get_mesh()))
         ans = raycasting_scene.cast_rays(o3d.core.Tensor(rays))
         object_ids: NDArray = ans['geometry_ids'].numpy()
         mask = (object_ids != raycasting_scene.INVALID_ID).astype(np.uint8)

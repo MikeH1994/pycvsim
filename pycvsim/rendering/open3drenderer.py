@@ -33,7 +33,7 @@ class Open3DRenderer(BaseRenderer):
 
         raycasting_scene = o3d.t.geometry.RaycastingScene()
         for obj in self.objects:
-            raycasting_scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(obj.mesh()))
+            raycasting_scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(obj.get_mesh()))
         dst_image = np.full((yres, xres, 3), fill_value=background_colour, dtype=np.float32)
         y_pixels, x_pixels = np.where(mask == 1)
         i = 0
@@ -94,7 +94,7 @@ class Open3DRenderer(BaseRenderer):
         offset = 0
         for i in range(len(self.objects)):
             primitive_ids[object_ids == i] -= offset
-            offset += np.asarray(self.objects[i].original_mesh.triangles).shape[0]
+            offset += np.asarray(self.objects[i].get_mesh().triangles).shape[0]
 
 
         # create an array of shape (a, b, c, ... , 3) to store sample results
@@ -102,8 +102,8 @@ class Open3DRenderer(BaseRenderer):
         # loop through each object in the scene, and find the samples that hit this object
         for i in range(len(self.objects)):
             # calculate the vertex colours for each triangle
-            vertex_colours = np.array(self.objects[i].original_mesh.vertex_colors, dtype=np.float32) * 255.0
-            triangle_indices = np.asarray(self.objects[i].original_mesh.triangles)
+            vertex_colours = np.array(self.objects[i].mesh.vertex_colors, dtype=np.float32) * 255.0
+            triangle_indices = np.asarray(self.objects[i].mesh.triangles)
             triangle_colours = vertex_colours[triangle_indices[:, 0]]
             triangle_colours += vertex_colours[triangle_indices[:, 1]]
             triangle_colours += vertex_colours[triangle_indices[:, 2]]
