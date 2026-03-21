@@ -5,15 +5,15 @@ import open3d as o3d
 from numpy.typing import NDArray
 from pycvsim.rendering.baserenderer import BaseRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
+from pycv import PinholeCamera
 import psutil
-from pycvsim.camera.virtualcamera import VirtualCamera
 
 
 class Open3DRenderer(BaseRenderer):
-    def __init__(self, cameras: List[VirtualCamera] = None, objects: List[SceneObject] = None):
+    def __init__(self, cameras: List[PinholeCamera] = None, objects: List[SceneObject] = None):
         super().__init__(cameras=cameras, objects=objects)
 
-    def _render_(self, camera: VirtualCamera, n_samples=32, mask=None, return_as_8_bit=True,
+    def _render_(self, camera: PinholeCamera, n_samples=32, mask=None, return_as_8_bit=True,
                  background_colour=np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
 
@@ -27,14 +27,9 @@ class Open3DRenderer(BaseRenderer):
         n_samples = int(round(math.sqrt(n_samples))**2)
         background_colour = np.array(background_colour)
 
-        safe_zone = camera.safe_zone
-        xres, yres = camera.get_res()
+        xres, yres = camera.res()
         if mask is None:
             mask = np.ones((yres, xres), dtype=np.uint8)
-        elif camera.xres + 2*camera.safe_zone != mask.shape[1]:
-            mask_padded = np.zeros((yres, xres), dtype=np.uint8)
-            mask_padded[safe_zone:-safe_zone, safe_zone:-safe_zone] = mask
-            mask = mask_padded
 
         raycasting_scene = o3d.t.geometry.RaycastingScene()
         for obj in self.objects:
@@ -49,8 +44,10 @@ class Open3DRenderer(BaseRenderer):
 
             y_pixels_i = y_pixels[i:i+max_elems]
             x_pixels_i = x_pixels[i:i+max_elems]
+            if len(y_pixels_i) == 0 or len(x_pixels_i) == 0:
+                continue
             try:
-                samples = self.render_samples(raycasting_scene, camera, x_pixels_i - safe_zone, y_pixels_i - safe_zone,
+                samples = self.render_samples(raycasting_scene, camera, x_pixels_i, y_pixels_i,
                                               n_samples=n_samples, background_colour=background_colour,
                                               fixed_multisample_pattern=fixed_multisample_pattern)
                 dst_image[y_pixels_i, x_pixels_i, :] = samples
@@ -63,7 +60,7 @@ class Open3DRenderer(BaseRenderer):
             return dst_image.astype(np.uint8)
         return dst_image
 
-    def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: VirtualCamera,
+    def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: PinholeCamera,
                        x_indices: NDArray, y_indices: NDArray, n_samples=1,
                        background_colour: NDArray = np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
@@ -86,7 +83,7 @@ class Open3DRenderer(BaseRenderer):
         pixels += self.get_multisample_pattern(n_samples, fixed_multisample_pattern)
 
         # generate rays and the raycast
-        rays = camera.generate_rays(apply_distortion=False, pixel_coords=pixels)
+        rays = camera.generate_rays(apply_undistortion=True, pixel_coords=pixels)
         ans = raycasting_scene.cast_rays(o3d.core.Tensor(rays))
 
         object_ids = ans["geometry_ids"].numpy()

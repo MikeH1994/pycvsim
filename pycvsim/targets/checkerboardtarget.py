@@ -74,7 +74,7 @@ class CheckerboardTarget(CalibrationTarget):
         object_points = object_points[1:-1, 1:-1].reshape(-1, 3)
 
         centre = np.mean(object_points, axis=0)
-        object_points -= centre
-        mesh = mesh.translate(-centre)
+        # object_points -= centre
+        #mesh = mesh.translate(-centre)
 
         return mesh, object_points[::-1, :]
