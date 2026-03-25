@@ -90,7 +90,7 @@ class BaseRenderer:
             images.append(self.render(i, apply_distortion=apply_distortion))
         return images
 
-    def render(self, camera_index, apply_distortion=False, apply_noise=False, apply_dof=True, return_as_8_bit=True,
+    def render(self, camera_index, return_as_8_bit=True,
                n_samples: Union[List, int]=1, n_bkg_samples: int = 1, **kwargs):
         """
 
@@ -108,9 +108,9 @@ class BaseRenderer:
         w, h = camera.res()
         if isinstance(n_samples, int):
             n_samples = [(n_samples, np.ones((h, w), dtype=np.uint8))]
-
-        mask = np.ones((h, w), dtype=np.uint8)
-        n_samples.insert(0, (n_bkg_samples, mask))
+        else:
+            mask = np.ones((h, w), dtype=np.uint8)
+            n_samples.insert(0, (n_bkg_samples, mask))
 
         image = np.zeros((h, w, 3))
         for (n_samps, samples_mask) in n_samples:

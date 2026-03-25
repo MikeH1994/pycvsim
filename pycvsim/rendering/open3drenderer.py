@@ -7,6 +7,7 @@ from pycvsim.rendering.baserenderer import BaseRenderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycv import PinholeCamera
 import psutil
+from scipy.stats import qmc
 
 
 class Open3DRenderer(BaseRenderer):
@@ -24,7 +25,6 @@ class Open3DRenderer(BaseRenderer):
         :param background_colour:
         :return:
         """
-        n_samples = int(round(math.sqrt(n_samples))**2)
         background_colour = np.array(background_colour)
 
         xres, yres = camera.res()
@@ -124,22 +124,8 @@ class Open3DRenderer(BaseRenderer):
         """
 
         if fixed_pattern:
-            assert(math.sqrt(n_samples)**2 == n_samples)
-            sqrt_samples = int(math.sqrt(n_samples))
-
-            pad_horizontal = 0 # 2 if sqrt_samples < 10000000 else 0
-            pad_middle = 1 if sqrt_samples % 2 == 0 else 0
-            x = np.linspace(-0.5, 0.5, sqrt_samples + pad_horizontal + pad_middle)
-            if pad_horizontal > 0:
-                x = x[1:-1]
-            if pad_middle > 0:
-                x = np.delete(x, sqrt_samples // 2)
-
-            xx, yy = np.meshgrid(x, x)
-            multisamples = np.zeros((n_samples, 2), dtype=np.float32)
-            multisamples[:, 0] = xx.reshape(-1)
-            multisamples[:, 1] = yy.reshape(-1)
-            return multisamples
+            pts = qmc.Halton(d=2, scramble=True).random(n_samples)
+            return pts - 0.5
         else:
             multisamples = np.random.uniform(-0.5, 0.5, (n_samples, 2))
             return multisamples

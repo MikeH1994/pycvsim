@@ -1,7 +1,7 @@
 from unittest import TestCase
 import numpy as np
 from pycvsim.targets.checkerboardtarget import CheckerboardTarget
-
+import pycv
 
 def create_checkerboard_points(board_size, dx):
     board_size = board_size
@@ -19,3 +19,5 @@ class TestCheckerboard(TestCase):
                 tgt = CheckerboardTarget(board_size, (point_width, point_width))
                 points_expected = create_checkerboard_points(board_size, point_width)
                 points_calculated = tgt.get_object_points(transformed=False)
+                err = pycv.rms(points_expected - points_calculated)
+                print(err)

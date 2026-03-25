@@ -23,6 +23,7 @@ renderer = Open3DRenderer(cameras=[camera], objects=[scene_object])
 
 class TestSceneCamera(TestCase):
     def test(self, plot=True, thresh=0.2):
+        np.random.seed(1234)
         for _ in range(30):
             angles = np.array([np.random.uniform(low=-10, high=10, size=1)[0],
                                np.random.uniform(low=-10, high=10, size=1)[0],
@@ -37,7 +38,7 @@ class TestSceneCamera(TestCase):
             renderer.set_camera_position(0, camera_pos)
             renderer.set_camera_lookpos(0, lookpos, np.array([0.0, 1.0, 0.0]))
 
-            img_render = renderer.render(0, n_samples=256, return_as_8_bit=True)
+            img_render = renderer.render(0, n_samples=512, return_as_8_bit=True)
             img_gray = cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY)
             object_points = scene_object.get_object_points()[::-1]
             corners_expected = renderer.cameras[0].project_points_to_2d(object_points, return_distorted=False)
