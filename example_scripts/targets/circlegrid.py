@@ -24,7 +24,7 @@ renderer.set_camera_lookpos(0, lookpos, np.array([0.0, 1.0, 0.0]))
 
 img_render = renderer.render(0, n_samples=64, return_as_8_bit=True)
 img_gray = cv2.cvtColor(img_render, cv2.COLOR_RGB2GRAY)
-object_points = scene_object.get_object_points()[::-1]
+object_points = scene_object.get_object_points()
 corners_expected = renderer.cameras[0].project_points_to_2d(object_points, return_distorted=False)
 success, corners_found, img_overlayed = pycv.find_circles_grid(img_gray, board_size)
 

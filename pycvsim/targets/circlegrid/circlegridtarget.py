@@ -18,4 +18,4 @@ class CircleGridTarget(CalibrationTarget):
         mesh.triangles = o3d.utility.Vector3iVector(triangles)
         mesh.vertex_colors = o3d.utility.Vector3dVector(colours)
         object_points = pycv.calibration.CalibrationTarget(board_size, grid_width, grid_height).object_points
-        super().__init__(mesh, object_points, None)
+        super().__init__(mesh, object_points)

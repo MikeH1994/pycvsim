@@ -9,17 +9,15 @@ class CalibrationTarget(SceneObject):
     boundary_region: NDArray
     object_points: NDArray
 
-    def __init__(self, mesh: o3d.geometry.TriangleMesh, object_points: NDArray, boundary_region: NDArray,
-                 name=""):
-        super().__init__(mesh, name)
+    def __init__(self, mesh: o3d.geometry.TriangleMesh, object_points: NDArray):
+        super().__init__(mesh, "")
         self.object_points = object_points
-        self.boundary_region = boundary_region
 
     def get_object_points(self, transformed=True):
         if transformed:
-            return (self.object_points.reshape(-1, 3) @ self.rotation.T + self.pos)[::-1, :].reshape(self.object_points.shape)
+            return self.object_points @ self.rotation.T + self.pos
         else:
-            return (np.copy(self.object_points) - np.min(self.object_points, axis=0))[::-1, :]
+            return np.copy(self.object_points)
 
     def get_center(self):
         boundary_region = self.get_boundary_region()
