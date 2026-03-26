@@ -1,5 +1,5 @@
 import numpy as np
-from pycvsim.targets.checkerboardtarget import CheckerboardTarget
+from pycvsim.targets.checkerboardtarget.checkerboardtarget import CheckerboardTarget
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.camera.virtualcamera import VirtualCamera
 import matplotlib.pyplot as plt

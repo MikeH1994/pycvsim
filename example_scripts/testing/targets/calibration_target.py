@@ -1,5 +1,5 @@
 import numpy as np
-from pycvsim.targets.checkerboardtarget import CheckerboardTarget
+from pycvsim.targets.checkerboardtarget.checkerboardtarget import CheckerboardTarget
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.camera.virtualcamera import VirtualCamera
 from pycvsim.core.image_utils import overlay_points_on_image

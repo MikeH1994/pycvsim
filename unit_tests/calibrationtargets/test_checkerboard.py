@@ -1,6 +1,6 @@
 from unittest import TestCase
 import numpy as np
-from pycvsim.targets.checkerboardtarget import CheckerboardTarget
+from pycvsim.targets.checkerboardtarget.checkerboardtarget import CheckerboardTarget
 import pycv
 
 def create_checkerboard_points(board_size, dx):

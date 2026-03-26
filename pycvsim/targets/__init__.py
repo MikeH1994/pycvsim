@@ -1,1 +1,2 @@
-from .checkerboardtarget import CheckerboardTarget
+from .checkerboard.checkerboardtarget import CheckerboardTarget
+from .circlegrid.circlegridtarget import CircleGridTarget

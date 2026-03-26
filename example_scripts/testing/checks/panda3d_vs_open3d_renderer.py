@@ -1,6 +1,6 @@
 import numpy as np
 import panda3d.core
-from pycvsim.targets.checkerboardtarget import CheckerboardTarget
+from pycvsim.targets.checkerboardtarget.checkerboardtarget import CheckerboardTarget
 from pycvsim.rendering.open3drenderer import Open3DRenderer
 from pycvsim.rendering.panda3drenderer import Panda3DRenderer
 from pycvsim.camera.virtualcamera import VirtualCamera

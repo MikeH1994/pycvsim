@@ -14,18 +14,6 @@ def create_box(bottom_left: NDArray, width: float, height: float,
     box = box.translate(bottom_left)
     return box
 
-
-def create_cylinder(position, radius, depth, color):
-    cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=radius, height=depth)
-    r = cylinder.get_rotation_matrix_from_xyz((0, 0, np.pi/2))
-    vertex_colors = np.array([color for i in range(len(cylinder.vertices))])
-    cylinder.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
-    cylinder = cylinder.rotate(r, center=(0, 0, 0))
-    cylinder = cylinder.translate(position)
-    cylinder = cylinder.translate((0, 0, depth/2))
-
-    return cylinder
-
 def create_sector_of_circle(theta_0: float, theta_1: float, radius: float, n_segments: int = 5, centre=np.zeros(3),
                             colour: NDArray = np.array([255.0, 255.0, 255.0])):
     def create_segment(index_0_, index_1_, triangle_indices_: List = None):
@@ -54,35 +42,6 @@ def create_sector_of_circle(theta_0: float, theta_1: float, radius: float, n_seg
     mesh.triangles = o3d.utility.Vector3iVector(triangle_indices)
     return mesh
 
-def create_box_with_hole(position: NDArray, width: float, height: float, hole_radius: float, thickness: float, chamfer_angle: float = 0.0):
-
-
-    pass
-
-def create_chamfer_cutout(radius, thickness, chamfer_angle):
-    tan_theta = math.tan(math.radians(chamfer_angle))
-    r1 = radius
-
-    if chamfer_angle == 0:
-        return None
-    elif chamfer_angle > 0.0:
-        # i.e we are chamfering to a bigger radius
-        # create a cone that cuts out this material, making sure that there is some extra clearance so the
-        # cone is longer than the material thickness
-        h1 = 1.2*thickness #
-        h2 = r1/tan_theta
-        h = h1 + h2
-        rb = r1 + h1*tan_theta
-        cutout = o3d.t.geometry.TriangleMesh.create_cone(radius=rb, height = h, resolution=100)
-        cutout.vertex.positions[:, 2]*=-1
-        """= o3d.core.Tensor(
-            cutout.vertex.positions * np.array([1.0, 1.0, -1.0], dtype=np.float32).reshape(1, -1), dtype=o3d.core.float32)"""
-        cutout.translate((0, 0, 1.01*thickness), relative=True)
-        cutout = tensor_mesh_to_legacy_mesh(cutout)
-        return cutout
-    else:
-        raise Exception("Negative chamfering not implemented yet")
-
 
 def transform_object_points(object_points: NDArray, translation: NDArray, euler_angles: NDArray, degrees=True):
     if degrees:
@@ -97,3 +56,11 @@ def transform_object_points(object_points: NDArray, translation: NDArray, euler_
     pcl = pcl.translate(translation)
     object_points_transformed = np.array(pcl.points).reshape(init_shape)
     return object_points_transformed
+
+def combine_submeshes(vertices_list, triangles_list, colours_list):
+    index_offset = 0
+
+    for i in range(len(vertices_list)):
+        triangles_list[i] += index_offset
+        index_offset += vertices_list[i].shape[0]
+    return np.vstack(vertices_list), np.vstack(triangles_list), np.vstack(colours_list)

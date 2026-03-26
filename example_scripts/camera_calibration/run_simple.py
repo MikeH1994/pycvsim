@@ -1,6 +1,6 @@
 from pycvsim.routines.calibration.imagesetgenerator import ImageSetGenerator
 from pycvsim.camera.camera import Camera
-from pycvsim.targets.checkerboardtarget import CheckerboardTarget
+from pycvsim.targets.checkerboardtarget.checkerboardtarget import CheckerboardTarget
 import numpy as np
 import cv2
 
