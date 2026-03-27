@@ -5,7 +5,6 @@ from pycvsim.targets.circlegrid.utils import create_square_with_circle_cutout, c
 
 
 def run():
-    vertices, triangles, colours = create_circle_grid((13, 8), 0.02, 0.02, 0.003, [0,0,0], [0.8,0.8,0.8])
     mesh = o3d.geometry.TriangleMesh()
     mesh.vertices = o3d.utility.Vector3dVector(vertices)
     mesh.triangles = o3d.utility.Vector3iVector(triangles)

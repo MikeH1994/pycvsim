@@ -82,7 +82,8 @@ def create_square(top_left, bottom_right, colour):
     colours = [colour for _ in range(vertices.shape[0])]
     return np.array(vertices, dtype=np.float32), np.array(triangles, dtype=np.int32), np.array(colours, dtype=np.float32)
 
-def create_circle_grid(board_size, grid_width, grid_height, radius, circle_colour, bkg_colour):
+def create_circle_grid(board_size, grid_size, radius, boundary, circle_colour, bkg_colour):
+    grid_width, grid_height = grid_size
     vertices = []
     triangles = []
     colors = []
@@ -95,4 +96,28 @@ def create_circle_grid(board_size, grid_width, grid_height, radius, circle_colou
             vertices.append(v)
             triangles.append(t)
             colors.append(c)
+    for i in range(4):
+        x0 = -grid_width/2
+        y0 = -grid_height/2
+        x1 = (board_size[0]-0.5)*grid_width
+        y1 = (board_size[1]-0.5)*grid_height
+        dx = boundary[0]
+        dy = boundary[1]
+
+        if i == 0:
+            # left hand side
+            v, t, c = create_square([x0-dx, y1+dy, 0], [x0, y0-dy, 0], bkg_colour)
+        elif i == 1:
+            # right hand side
+            v, t, c = create_square([x1, y1+dy, 0], [x1+dx, y0-dy, 0], bkg_colour)
+        elif i == 2:
+            # top
+            v, t, c = create_square([x0, y1+dy, 0], [x1, y1, 0], bkg_colour)
+        else:
+            # bottom
+            v, t, c = create_square([x0, y0, 0], [x1, y0-dy, 0], bkg_colour)
+        vertices.append(v)
+        triangles.append(t)
+        colors.append(c)
+
     return combine_submeshes(vertices, triangles, colors)

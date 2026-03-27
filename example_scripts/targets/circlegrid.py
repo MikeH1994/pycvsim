@@ -8,7 +8,7 @@ from pycv import PinholeCamera
 import matplotlib.pyplot as plt
 
 board_size = (7, 6)
-scene_object = CircleGridTarget(board_size, 0.05, 0.01, (0, 0, 0),
+scene_object = CircleGridTarget(board_size, (0.05, 0.05), 0.01, (0.1, 0.1), (0, 0, 0),
                                 (255, 255, 255))
 xres = 640
 yres = 512
@@ -18,7 +18,7 @@ camera = PinholeCamera(camera_matrix, (xres, yres), p=np.array([0.0, 0.0, -0.5])
 renderer = Open3DRenderer(cameras=[camera], objects=[scene_object])
 
 lookpos = np.mean(scene_object.get_object_points(), axis=0)
-camera_pos = np.array([0.0, 0.0, -1.0])
+camera_pos = np.array([0.0, 0.0, -1.5])
 renderer.set_camera_position(0, camera_pos)
 renderer.set_camera_lookpos(0, lookpos, np.array([0.0, 1.0, 0.0]))
 
