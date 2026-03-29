@@ -3,23 +3,23 @@ import math
 import numpy as np
 import open3d as o3d
 from numpy.typing import NDArray
-from pycvsim.rendering.baserenderer import BaseRenderer
+from pycvsim.rendering.renderer import Renderer
 from pycvsim.sceneobjects.sceneobject import SceneObject
 from pycv import PinholeCamera
 import psutil
 from scipy.stats import qmc
 
 
-class Open3DRenderer(BaseRenderer):
+class Open3DRenderer(Renderer):
     def __init__(self, cameras: List[PinholeCamera] = None, objects: List[SceneObject] = None):
         super().__init__(cameras=cameras, objects=objects)
 
-    def _render_(self, camera: PinholeCamera, n_samples=32, mask=None, return_as_8_bit=True,
+    def _render_(self, camera: PinholeCamera, n_subsamples=32, mask=None, return_as_8_bit=True,
                  background_colour=np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
 
         :param camera:
-        :param n_samples:
+        :param n_subsamples:
         :param mask:
         :param return_as_8_bit:
         :param background_colour:
@@ -40,16 +40,16 @@ class Open3DRenderer(BaseRenderer):
         k = 0.1
         while i <= y_pixels.shape[0]:
             available_memory = psutil.virtual_memory().available
-            max_elems = int(k * available_memory / n_samples / 8)
+            max_elems = int(k * available_memory / n_subsamples / 8)
 
             y_pixels_i = y_pixels[i:i+max_elems]
             x_pixels_i = x_pixels[i:i+max_elems]
             if len(y_pixels_i) == 0 or len(x_pixels_i) == 0:
                 continue
             try:
-                samples = self.render_samples(raycasting_scene, camera, x_pixels_i, y_pixels_i,
-                                              n_samples=n_samples, background_colour=background_colour,
-                                              fixed_multisample_pattern=fixed_multisample_pattern)
+                samples = self._render_samples(raycasting_scene, camera, x_pixels_i, y_pixels_i,
+                                               n_subsamples=n_subsamples, background_colour=background_colour,
+                                               fixed_multisample_pattern=fixed_multisample_pattern)
                 dst_image[y_pixels_i, x_pixels_i, :] = samples
                 i += max_elems
             except Exception:
@@ -60,27 +60,27 @@ class Open3DRenderer(BaseRenderer):
             return dst_image.astype(np.uint8)
         return dst_image
 
-    def render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: PinholeCamera,
-                       x_indices: NDArray, y_indices: NDArray, n_samples=1,
-                       background_colour: NDArray = np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
+    def _render_samples(self, raycasting_scene: o3d.t.geometry.RaycastingScene, camera: PinholeCamera,
+                        x: NDArray, y: NDArray, n_subsamples=1,
+                        background_colour: NDArray = np.array([51.0, 51.0, 51.0]), fixed_multisample_pattern=True):
         """
 
         :param raycasting_scene:
         :param camera:
-        :param x_indices:
-        :param y_indices:
-        :param n_samples:
+        :param x:
+        :param y:
+        :param n_subsamples:
         :param background_colour:
         :return:
         """
 
         # create an array containing the x, y coordinates of the pixels we are going to sample
-        pixels = np.zeros((x_indices.shape[0], n_samples, 2), dtype=np.float32)
-        pixels[:, :, 0] = x_indices.reshape(-1, 1)
-        pixels[:, :, 1] = y_indices.reshape(-1, 1)
+        pixels = np.zeros((x.shape[0], n_subsamples, 2), dtype=np.float32)
+        pixels[:, :, 0] = x.reshape(-1, 1)
+        pixels[:, :, 1] = y.reshape(-1, 1)
 
         # in this pixels, add the multisampling pattern
-        pixels += self.get_multisample_pattern(n_samples, fixed_multisample_pattern)
+        pixels += self.get_multisample_pattern(n_subsamples, fixed_multisample_pattern)
 
         # generate rays and the raycast
         rays = camera.generate_rays(apply_undistortion=True, pixel_coords=pixels)

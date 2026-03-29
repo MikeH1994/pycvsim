@@ -16,7 +16,7 @@ def compute_pixel_dirn_old(camera, u, v):
     vy = 2.0 * vz * (v - cy + 0.5) / camera.yres * np.tan(np.radians(camera.vfov / 2.0))
     vec = np.array([vx, vy, vz])
     # calculate the direction vector in world coordinates
-    vec = np.matmul(camera.r, vec)
+    vec = np.matmul(camera.rotation, vec)
     vec /= np.linalg.norm(vec)
     return vec
 

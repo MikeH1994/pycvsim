@@ -29,7 +29,7 @@ class StereoRoutine:
         """
 
         T = self.camera_1.pos - self.camera_2.pos
-        R = np.matmul(np.linalg.inv(self.camera_2.r), self.camera_1.r)
+        R = np.matmul(np.linalg.inv(self.camera_2.rotation), self.camera_1.rotation)
         """
         https://amroamroamro.github.io/mexopencv/matlab/cv.stereoRectify.html
         
@@ -125,7 +125,7 @@ class StereoRoutine:
 
         # go from camera frame of reference to the world frame of reference
         # the camera matrix r defines the transformation from the
-        R = scipy.spatial.transform.Rotation.from_matrix(self.camera_1.r)
+        R = scipy.spatial.transform.Rotation.from_matrix(self.camera_1.rotation)
         img_reprojected = R.apply((img_reprojected).reshape(-1, 3), inverse=False).reshape(init_shape)
         img_reprojected += self.camera_1.pos
 
